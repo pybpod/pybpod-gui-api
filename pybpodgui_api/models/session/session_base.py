@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-import os, csv, datetime, logging
+import os, csv, datetime, logging, dateutil
+from pybpodapi.session import Session
+from pybpodapi.bpod.com.messaging.session_info import SessionInfo
 from pybpodgui_plugin.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
 
 logger = logging.getLogger(__name__)
@@ -45,6 +47,9 @@ class SessionBase(object):
 		parsed_messages = parse_board_msg(msg) 
 
 		for m in parsed_messages: 
+			if isinstance(m, SessionInfo) and m.infoname==Session.INFO_SESSION_ENDED:
+				self.ended = m.infovalue
+
 			self.csvwriter.writerow(m.tolist()) 
 			self.messages_history.append(m) 
 		
