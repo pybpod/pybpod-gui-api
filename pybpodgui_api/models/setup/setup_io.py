@@ -3,7 +3,7 @@
 
 import logging
 import os, json, glob, hashlib
-from pybpodgui_plugin.utils.send2trash_wrapper import send2trash
+from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from pybpodgui_api.models.setup.setup_base import SetupBase
 
 logger = logging.getLogger(__name__)
@@ -23,8 +23,8 @@ class SetupBaseIO(SetupBase):
 		data.update({'name': self.name})
 		data.update({'board': self.board.name if self.board else None})
 		self.board_task.collect_data(data)
-
 		return data
+
 
 	def save(self, parent_path):
 		if not self.name:
@@ -39,7 +39,7 @@ class SetupBaseIO(SetupBase):
 				os.makedirs(setup_path)
 
 			# collect board_task data
-			board_task_data = self.board_task.save()
+			board_task_data = self.board_task.save(parent_path)
 
 			# save sessions
 			for session in self.sessions:

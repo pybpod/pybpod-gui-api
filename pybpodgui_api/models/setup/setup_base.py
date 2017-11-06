@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class SetupBase(object):
+
+	
 	def __init__(self, experiment):
 		self.experiment = experiment
 		self.board_task = self.create_board_task()

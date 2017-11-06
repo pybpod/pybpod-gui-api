@@ -47,7 +47,6 @@ class ExperimentBase(object):
 		self._task = value
 		for setup in self.setups:
 			setup.task = value
-			setup.board_task.load_task_details()
 
 	@property
 	def project(self):

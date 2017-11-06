@@ -7,7 +7,6 @@ A board represents the hardware that controls the running session for a specific
 
 import os
 import logging
-
 logger = logging.getLogger(__name__)
 
 

@@ -4,8 +4,8 @@
 
 import os, csv, datetime, logging, dateutil
 from pybpodapi.session import Session
-from pybpodapi.bpod.com.messaging.session_info import SessionInfo
-from pybpodgui_plugin.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
+from pybpodapi.com.messaging.session_info import SessionInfo
+from pybpodgui_api.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
 
 logger = logging.getLogger(__name__)
 

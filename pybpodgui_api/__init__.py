@@ -19,7 +19,7 @@ __status__ 		= "Development"
 # Load settings using pysettings library
 # Include user settings in case the file exists
 
-#conf += 'pycontrolapi.settings'
+conf += 'pybpodgui_api.settings'
 
 # try:
 # 	import pycontrolapi.user_settings_api as user_settings

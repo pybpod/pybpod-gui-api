@@ -6,11 +6,11 @@ import os, csv, datetime, dateutil
 from pybpodgui_api.models.session.session_base 	import SessionBase
 from pybpodgui_api.exceptions.invalid_session 	import InvalidSessionError
 
-from pybpodgui_plugin.com.messaging.msg_factory import BpodMessageParser
+from pybpodgui_api.com.messaging.msg_factory import BpodMessageParser
 
 
 from pybpodapi.session import Session
-from pybpodapi.bpod.com.messaging.session_info import SessionInfo
+from pybpodapi.com.messaging.session_info import SessionInfo
 from pybpodgui_plugin.com.run_handlers.bpod_runner import BpodRunner
 
 

@@ -12,7 +12,7 @@ from pybpodgui_plugin.com.async.async_bpod import AsyncBpod
 
 from pybpodgui_api.models.board.board_io import BoardIO
 from pybpodgui_api.models.board.board_operations import BoardOperations
-from pybpodgui_plugin.com.messaging.msg_factory import parse_board_msg
+from pybpodgui_api.com.messaging.msg_factory import parse_board_msg
 from pybpodgui_api.models.setup.board_task import BoardTask  # used for type checking
 
 from pybranch.com.messaging.stderr import StderrMessage
@@ -126,6 +126,7 @@ conf += RunnerSettings
 			board_task.board.name,
 			session.setup.name,
 			[s.name for s in session.setup.subjects],
+			[(v.name, v.value) for v in board_task.variables],
 			handler_evt=self.run_task_handler_evt,
 			extra_args=(BoardOperations.RUN_PROTOCOL,),
 			group=uuid.uuid4()

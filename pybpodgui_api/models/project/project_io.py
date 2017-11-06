@@ -6,7 +6,7 @@ import logging
 import glob
 import json
 import hashlib
-from pybpodgui_plugin.utils.send2trash_wrapper import send2trash
+from pybpodgui_api.utils.send2trash_wrapper import send2trash
 
 from pybpodgui_api.models.project.project_base import ProjectBase
 
@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 class ProjectIO(ProjectBase):
 
-	def __init__(self):
-		super(ProjectIO, self).__init__()
 
 	##########################################################################
 	####### FUNCTIONS ########################################################
@@ -26,7 +24,9 @@ class ProjectIO(ProjectBase):
 
 	def load(self, project_path):
 		"""
-		Load project from data file
+		Load project from a folder.
+
+		:ivar str project_path: Full path of the project to load.
 		"""
 
 		settings_path = os.path.join(project_path, 'project-settings.json')
@@ -90,6 +90,11 @@ class ProjectIO(ProjectBase):
 		return True
 
 	def collect_data(self, data):
+		"""
+		Collect the data of the project. This function is used to calculate the checksum of the project and verify if it was updated.
+
+		:rtype: dict
+		"""
 		data.update({'name': self.name})
 		data.update({'experiments': []})
 		data.update({'boards': []})
