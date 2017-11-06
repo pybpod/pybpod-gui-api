@@ -1,17 +1,23 @@
 ***************************
-:mod:`setup` --- Bpod setup
+:mod:`setup`
 ***************************
+
+.. module:: pybpodgui_api.models.setup
+   :synopsis: Bpod setup
+
+
+.. toctree::
+   :titlesonly:
+
+   session
+   board_task
+   task_variable
 
 --------
 Overview
 --------
 
 Enumerates Bpod board supported operations.
-
-.. toctree::
-   :titlesonly:
-
-   board_task
 
 --------------
 Implementation

@@ -8,95 +8,120 @@ logger = logging.getLogger(__name__)
 
 
 class ExperimentBase(object):
-	"""
-	Experiment entity details.
-	Each experiment should have a name, a list of setups, a project belonging to, a path and a task.
-	"""
+    """
+    Experiment entity details.
+    Each experiment should have a name, a list of setups, a project belonging to, a path and a task.
+    """
 
-	def __init__(self, project):
-		"""
-		:param project: project object reference
-		"""
-		self.name = 'Untitled experiment {0}'.format(len(project.experiments))
-		self._setups = []
-		self.project = project
-		self.path = None
-		self.task = None
+    def __init__(self, project):
+        """
+        :ivar Project project: project object reference
+        """
+        self.name = 'Untitled experiment {0}'.format(len(project.experiments))
+        self._setups = []
+        self.project = project
+        self.path = None
+        self.task = None
 
-		self.project += self
+        self.project += self
 
-	##########################################################################
-	####### PROPERTIES #######################################################
-	##########################################################################
+    ##########################################################################
+    ####### PROPERTIES #######################################################
+    ##########################################################################
 
-	@property
-	def name(self):
-		return self._name
+    @property
+    def name(self):
+        """
+        Get and set the experiment name
 
-	@name.setter
-	def name(self, value):
-		self._name = value
+        :rtype: str
+        """
+        return self._name
 
-	@property
-	def task(self):
-		return self._task
+    @name.setter
+    def name(self, value):
+        self._name = value
 
-	@task.setter
-	def task(self, value):
-		if isinstance(value, str): value = self.project.find_task(value)
-		self._task = value
-		for setup in self.setups:
-			setup.task = value
+    @property
+    def task(self):
+        """
+        Get and set the experiment task
 
-	@property
-	def project(self):
-		return self._project
+        :rtype: Task
+        """
+        return self._task
 
-	@project.setter
-	def project(self, value):
-		self._project = value
+    @task.setter
+    def task(self, value):
+        if isinstance(value, str): value = self.project.find_task(value)
+        self._task = value
+        for setup in self.setups:
+            setup.task = value
 
-	@property
-	def setups(self):
-		return self._setups
+    @property
+    def project(self):
+        """
+        Get and set the experiment project
 
-	@property
-	def path(self):
-		return self._path
+        :rtype: Project
+        """
+        return self._project
 
-	@path.setter
-	def path(self, value):
-		self._path = value
+    @project.setter
+    def project(self, value):
+        self._project = value
 
-	##########################################################################
-	####### FUNCTIONS ########################################################
-	##########################################################################
+    @property
+    def setups(self):
+        """
+        Get the experiment setups
 
-	def remove(self):
-		"""
-		Remove experiment
-		 
-		"""
-		pass
+        :rtype: list(Setup)
+        """
+        return self._setups
 
-	def create_setup(self):
-		"""
-		Create new instance of setup
-		
-		:rtype: Setup
-		"""
-		return Setup(self)
+    @property
+    def path(self):
+        """
+        Get and set the experiment files path
 
-	def __add__(self, obj):
-		if isinstance(obj, Setup): self._setups.append(obj)
-		return self
+        :rtype: str
+        """
+        return self._path
 
-	def __sub__(self, obj):
-		if isinstance(obj, Setup): self._setups.remove(obj)
-		return self
+    @path.setter
+    def path(self, value):
+        self._path = value
 
-	def __unicode__(self):
-		return self.name
+    ##########################################################################
+    ####### FUNCTIONS ########################################################
+    ##########################################################################
 
-	def __str__(self):
-		return self.__unicode__()
+    def remove(self):
+        """
+        Remove experiment
+         
+        """
+        pass
+
+    def create_setup(self):
+        """
+        Create new instance of setup
+        
+        :rtype: Setup
+        """
+        return Setup(self)
+
+    def __add__(self, obj):
+        if isinstance(obj, Setup): self._setups.append(obj)
+        return self
+
+    def __sub__(self, obj):
+        if isinstance(obj, Setup): self._setups.remove(obj)
+        return self
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.__unicode__()

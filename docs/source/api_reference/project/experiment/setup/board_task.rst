@@ -1,8 +1,8 @@
-***************************
-:mod:`board` --- Bpod board
-***************************
+************************************
+:mod:`board_task`
+************************************
 
-.. module:: pybpodgui_plugin.api.models.board
+.. module:: pybpodgui_api.setup.board_task
    :synopsis: Bpod board
 
 --------
@@ -18,4 +18,4 @@ Implementation
 .. autoclass:: pybpodgui_api.models.setup.board_task.BoardTask
 	:inherited-members:
 	:members:
-	:undoc-members:
+	:exclude-members: collect_data

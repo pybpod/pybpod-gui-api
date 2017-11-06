@@ -1,8 +1,8 @@
 ***************************
-:mod:`board` --- Bpod board
+:mod:`board`
 ***************************
 
-.. module:: pybpodgui_plugin.api.models.board
+.. module:: pybpodgui_api.models.board
    :synopsis: Bpod board
 
 --------
@@ -18,4 +18,4 @@ Implementation
 .. autoclass:: pybpodgui_api.models.board.Board
 	:inherited-members:
 	:members:
-	:undoc-members:
+	:exclude-members: call_function, event_executor, wait_for_results

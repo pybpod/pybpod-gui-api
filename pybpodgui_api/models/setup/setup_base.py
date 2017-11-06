@@ -11,121 +11,182 @@ logger = logging.getLogger(__name__)
 
 class SetupBase(object):
 
-	
-	def __init__(self, experiment):
-		self.experiment = experiment
-		self.board_task = self.create_board_task()
+    
+    def __init__(self, experiment):
+        """
+        :ivar Experiment experiment: Experiment to which the Setup belongs to
+        """
+        self.experiment = experiment
+        self.board_task = self.create_board_task()
 
-		setup_path = None
-		if experiment.path is not None:
-			setups_path = os.path.join(experiment.path, 'setups')
-			if not os.path.exists(setups_path): os.makedirs(setups_path)
+        setup_path = None
+        if experiment.path is not None:
+            setups_path = os.path.join(experiment.path, 'setups')
+            if not os.path.exists(setups_path): os.makedirs(setups_path)
 
-			setup_path = os.path.join(setups_path, self.name)
-			if not os.path.exists(setup_path): os.makedirs(setup_path)
+            setup_path = os.path.join(setups_path, self.name)
+            if not os.path.exists(setup_path): os.makedirs(setup_path)
 
-		self.name = "Untitled box {0}".format(len(self.experiment.setups))
-		self._sessions = []
-		self._subjects = []
-		self.path 	= setup_path
-		self.board 	= None
-		self.task 	= self.experiment.task
+        self.name = "Untitled box {0}".format(len(self.experiment.setups))
+        self._sessions = []
+        self._subjects = []
+        self.path   = setup_path
+        self.board  = None
+        self.task   = self.experiment.task
 
-		self.experiment += self
+        self.experiment += self
 
 
 
-	##########################################################################
-	####### PROPERTIES #######################################################
-	##########################################################################
+    ##########################################################################
+    ####### PROPERTIES #######################################################
+    ##########################################################################
 
-	@property
-	def name(self):
-		return self._name
+    @property
+    def name(self):
+        """
+        Get and set setup name
 
-	@name.setter
-	def name(self, value):
-		self._name = value
+        :rtype: str
+        """
+        return self._name
 
-	@property
-	def subjects(self):
-		return self._subjects
+    @name.setter
+    def name(self, value):
+        self._name = value
 
-	@property
-	def board(self):
-		return self.board_task.board
+    @property
+    def subjects(self):
+        """
+        Get list of subjects
 
-	@board.setter
-	def board(self, value):
-		if isinstance(value, str): value = self.project.find_board(value)
-		if self.board_task: self.board_task.board = value
+        :rtype: list(Subject)
+        """
+        return self._subjects
 
-	@property
-	def task(self):
-		return self.board_task.task
+    @property
+    def board(self):
+        """
+        Get and set setup board
 
-	@task.setter
-	def task(self, value):
-		if isinstance(value, str): value = self.project.find_task(value)
-		if self.board_task: self.board_task.task = value
+        :rtype: Board
+        """
+        return self.board_task.board
 
-	@property
-	def experiment(self):
-		return self._experiment
+    @board.setter
+    def board(self, value):
+        if isinstance(value, str): value = self.project.find_board(value)
+        if self.board_task: self.board_task.board = value
 
-	@experiment.setter
-	def experiment(self, value):
-		self._experiment = value
+    @property
+    def task(self):
+        """
+        Get and set task
 
-	@property
-	def project(self):
-		return self.experiment.project
+        :rtype: Task
+        """
+        return self.board_task.task
 
-	@property
-	def sessions(self):
-		return self._sessions
+    @task.setter
+    def task(self, value):
+        if isinstance(value, str): value = self.project.find_task(value)
+        if self.board_task: self.board_task.task = value
 
-	@property
-	def path(self):
-		return self._path
+    @property
+    def experiment(self):
+        """
+        Get and set the experiment
 
-	@path.setter
-	def path(self, value):
-		self._path = value
+        :rtype: Experiment
+        """
+        return self._experiment
 
-	@property
-	def last_session(self):
-		try:
-			order_sessions = sorted(self.sessions, key=lambda session: session.started)  # sort by end_date
-			return order_sessions[-1]
-		except IndexError as err:
-			return None
+    @experiment.setter
+    def experiment(self, value):
+        self._experiment = value
 
-	##########################################################################
-	####### FUNCTIONS ########################################################
-	##########################################################################
+    @property
+    def project(self):
+        """
+        Get project
 
-	def remove(self):
-		pass
+        :rtype: Project
+        """
+        return self.experiment.project
 
-	def create_board_task(self):
-		return BoardTask(self)
+    @property
+    def sessions(self):
+        """
+        Get the list of sessions
 
-	def create_session(self):
-		return Session(self)
+        :rtype: list(Session)
+        """
+        return self._sessions
 
-	def __unicode__(self):
-		return self.name
+    @property
+    def path(self):
+        """
+        Get and set setup path
 
-	def __str__(self):
-		return self.__unicode__()
+        :rtype: str
+        """
+        return self._path
 
-	def __add__(self, obj):
-		if isinstance(obj, Session) and obj not in self._sessions: self._sessions.append(obj)
-		if isinstance(obj, Subject) and obj not in self._subjects: self._subjects.append(obj)
-		return self
+    @path.setter
+    def path(self, value):
+        self._path = value
 
-	def __sub__(self, obj):
-		if isinstance(obj, Session): self._sessions.remove(obj)
-		if isinstance(obj, Subject): self._subjects.remove(obj)
-		return self
+    @property
+    def last_session(self):
+        """
+        Get last created session
+
+        :rtype: Session
+        """
+        try:
+            order_sessions = sorted(self.sessions, key=lambda session: session.started)  # sort by end_date
+            return order_sessions[-1]
+        except IndexError as err:
+            return None
+
+    ##########################################################################
+    ####### FUNCTIONS ########################################################
+    ##########################################################################
+
+    def remove(self):
+        """
+        Remove the setup from the project
+        """
+        pass
+
+    def create_board_task(self):
+        """
+        Create a new BoardTask object
+
+        :rtype: BoardTask
+        """
+        return BoardTask(self)
+
+    def create_session(self):
+        """
+        Create a new Session object
+
+        :rtype: Session
+        """
+        return Session(self)
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __add__(self, obj):
+        if isinstance(obj, Session) and obj not in self._sessions: self._sessions.append(obj)
+        if isinstance(obj, Subject) and obj not in self._subjects: self._subjects.append(obj)
+        return self
+
+    def __sub__(self, obj):
+        if isinstance(obj, Session): self._sessions.remove(obj)
+        if isinstance(obj, Subject): self._subjects.remove(obj)
+        return self

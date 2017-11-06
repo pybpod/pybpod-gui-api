@@ -45,13 +45,7 @@ class SetupCom(SetupBaseIO):
 
 	@property
 	def status(self):
-		try:
-			if self.board is not None and self.board.status == self.board.STATUS_INSTALLING_FRAMEWORK:
-				return SetupCom.STATUS_BOARD_LOCKED
-			else:
-				return self._status
-		except Exception as e:
-			logger.error(str(e), exc_info=True)
+		return self._status
 
 	@status.setter
 	def status(self, value):
@@ -73,9 +67,6 @@ class SetupCom(SetupBaseIO):
 		This method will restore task variables from session, create a new session
 		and start the 'run task' operation by calling board function run_task.
 
-		.. seealso:
-			:py:meth:`pycontrolgui.models.board.board_com.BoardCom.run_task`.
-
 		"""
 		if not self.project.is_saved():
 			logger.warning("Run protocol cannot be executed because project is not saved.")
@@ -93,16 +84,4 @@ class SetupCom(SetupBaseIO):
 			logger.error(str(err), exc_info=True)
 			raise Exception("Unknown error found while running task. See log for more details.")
 
-	def stop_task(self):
-		"""
-		Stop task on board.
-
-		Update setup status to STATUS_RUNNING_TASK_ABOUT_2_STOP and try to stop board.
-
-		"""
-		if hasattr(self, '_run_flag') and self._run_flag:
-			self.status = SetupCom.STATUS_RUNNING_TASK_ABOUT_2_STOP
-			self.board.write(b'E') # Serial command to stop run.
-			sleep(0.1)
-			self._run_flag.set()
-
+	

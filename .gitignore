@@ -1,0 +1,8 @@
+
+docs/build/html/
+
+docs/build/doctrees/
+
+docs/app\.log
+
+*.log

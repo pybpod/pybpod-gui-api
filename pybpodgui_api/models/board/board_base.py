@@ -11,94 +11,131 @@ logger = logging.getLogger(__name__)
 
 
 class BoardBase(object):
-	"""
-	Board base class with main attributes. A board should have a name, serial port, project belonging to, a path and a list of messages.
-	"""
+    """
+    Board base class with main attributes. A board should have a name, serial port, project belonging to, a path and a list of messages.
+    """
 
-	def __init__(self, project):
-		self.name = 'Untitled box {0}'.format(len(project.boards))
-		self.serial_port = None
-		self.project = project
+    def __init__(self, project):
+        """
+        :ivar Project project: Project to which the Board belongs to.
+        """
+        self.name = 'Untitled box {0}'.format(len(project.boards))
+        self.serial_port = None
+        self.project = project
 
-		self._path = None
-		self.log_messages = []
+        self._path = None
+        self.log_messages = []
 
-		self.project += self
+        self.project += self
 
-		self.enabled_bncports 		= None
-		self.enabled_wiredports 	= None
-		self.enabled_behaviorports 	= None
+        self.enabled_bncports       = None
+        self.enabled_wiredports     = None
+        self.enabled_behaviorports  = None
 
-	##########################################################################
-	####### PROPERTIES #######################################################
-	##########################################################################
+    ##########################################################################
+    ####### PROPERTIES #######################################################
+    ##########################################################################
 
-	@property
-	def name(self):
-		return self._name
+    @property
+    def name(self):
+        """
+        Get and set the board name
 
-	@name.setter
-	def name(self, value):
-		self._name = value
+        :rtype: str
+        """
+        return self._name
 
-	@property
-	def serial_port(self):
-		return self._serial_port
+    @name.setter
+    def name(self, value):
+        self._name = value
 
-	@serial_port.setter
-	def serial_port(self, serial_port):
-		self._serial_port = serial_port
+    @property
+    def serial_port(self):
+        """
+        Get and set the board serial port
 
-	@property
-	def project(self):
-		return self._project
+        :rtype: str
+        """
+        return self._serial_port
 
-	@project.setter
-	def project(self, value):
-		self._project = value
+    @serial_port.setter
+    def serial_port(self, serial_port):
+        self._serial_port = serial_port
 
-	@property
-	def hardware_file(self):
-		if self.path:
-			hw = os.path.join(self.path, 'hardware.py')
-			if os.path.isfile(hw): return hw
+    @property
+    def project(self):
+        """
+        Get and set the board project
 
-		return None
+        :rtype: str
+        """
+        return self._project
 
-	@property
-	def path(self):
-		return self._path
+    @project.setter
+    def project(self, value):
+        self._project = value
 
-	@path.setter
-	def path(self, value):
-		self._path = value
 
-	@property
-	def enabled_bncports(self):				return self._enabled_bncports
-	@enabled_bncports.setter
-	def enabled_bncports(self, value): 		self._enabled_bncports = value
+    @property
+    def path(self):
+        """
+        Get and set the board path
 
-	@property
-	def enabled_wiredports(self):			return self._enabled_wiredports
-	@enabled_wiredports.setter
-	def enabled_wiredports(self, value): self._enabled_wiredports = value
+        :rtype: str
+        """
+        return self._path
 
-	@property
-	def enabled_behaviorports(self):		return self._enabled_behaviorports
-	@enabled_behaviorports.setter
-	def enabled_behaviorports(self, value): self._enabled_behaviorports = value
+    @path.setter
+    def path(self, value):
+        self._path = value
 
-	##########################################################################
-	####### FUNCTIONS ########################################################
-	##########################################################################
+    @property
+    def enabled_bncports(self):
+        """
+        Get and set enabled bncports
 
-	def remove(self):
-		pass
+        :rtype: list(Boolean)
+        """
+        return self._enabled_bncports
 
-	def __unicode__(self):
-		return self.name
+    @enabled_bncports.setter
+    def enabled_bncports(self, value):      self._enabled_bncports = value
 
-	def __str__(self):
-		return self.__unicode__()
+    @property
+    def enabled_wiredports(self):
+        """
+        Get and set the enabled wired ports
+
+        :rtype: list(Boolean)
+        """
+        return self._enabled_wiredports
+
+    @enabled_wiredports.setter
+    def enabled_wiredports(self, value): self._enabled_wiredports = value
+
+    @property
+    def enabled_behaviorports(self):
+        """
+        Get and set the experiment name
+
+        :rtype: list(Boolean)
+        """
+        return self._enabled_behaviorports
+
+    @enabled_behaviorports.setter
+    def enabled_behaviorports(self, value): self._enabled_behaviorports = value
+
+    ##########################################################################
+    ####### FUNCTIONS ########################################################
+    ##########################################################################
+
+    def remove(self):
+        pass
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.__unicode__()
 
 

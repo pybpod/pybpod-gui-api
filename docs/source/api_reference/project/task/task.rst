@@ -1,8 +1,8 @@
 *************************
-:mod:`task` --- Bpod task
+:mod:`task`
 *************************
 
-.. module:: pybpodgui_plugin.api.models.task
+.. module:: pybpodgui_api.models.task
    :synopsis: Bpod API task
 
 --------
@@ -18,4 +18,3 @@ Implementation
 .. autoclass:: pybpodgui_api.models.task.Task
     :inherited-members:
 	:members:
-	:undoc-members:

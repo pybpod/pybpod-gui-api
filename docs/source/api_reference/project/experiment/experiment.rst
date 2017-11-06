@@ -1,15 +1,21 @@
 *************************************
-:mod:`experiment` --- Bpod experiment
+:mod:`experiment`
 *************************************
 
-.. module:: pybpodgui_plugin.api.models.experiment
+.. module:: pybpodgui_api.models.experiment
    :synopsis: Bpod experiment
+
+.. toctree::
+   :titlesonly:
+
+   setup/setup
 
 --------
 Overview
 --------
 
 Enumerates Bpod board supported operations.
+
 
 --------------
 Implementation

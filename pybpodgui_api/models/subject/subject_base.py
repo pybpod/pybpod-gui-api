@@ -10,40 +10,65 @@ logger = logging.getLogger(__name__)
 
 class SubjectBase(object):
 
-	def __init__(self, project):
-		self._path		= None
-		
-		self.name 		= 'Untitled subject {0}'.format(len(project.subjects))
-		self.project 	= project
+    def __init__(self, project):
+        self._path      = None
+        
+        self.name       = 'Untitled subject {0}'.format(len(project.subjects))
+        self.project    = project
 
-		self.project 	+= self
-		
-	##########################################################################
-	####### PROPERTIES #######################################################
-	##########################################################################
+        self.project    += self
+        
+    ##########################################################################
+    ####### PROPERTIES #######################################################
+    ##########################################################################
 
-	@property
-	def name(self): 			return self._name
-	@name.setter
-	def name(self, value):		self._name = value
+    @property
+    def name(self):
+        """
+        Get and set setup name
 
-	@property
-	def project(self): 			return self._project
-	@project.setter
-	def project(self, value): 	self._project = value
+        :rtype: str
+        """
+        return self._name
 
-	@property
-	def path(self):				return self._path
-	@path.setter
-	def path(self, value):		self._path = value
+    @name.setter
+    def name(self, value):      self._name = value
 
-	##########################################################################
-	####### FUNCTIONS ########################################################
-	##########################################################################
+    @property
+    def project(self):
+        """
+        Get and set project
 
-	def remove(self): pass
+        :rtype: str
+        """
+        return self._project
 
-	def __unicode__(self):	return self.name
-	def __str__(self): 		return self.__unicode__()
+    @project.setter
+    def project(self, value):   self._project = value
+
+    @property
+    def path(self):
+        """
+        Get and set the path
+
+        :rtype: str
+        """
+        return self._path
+
+    @path.setter
+    def path(self, value):      self._path = value
+
+    ##########################################################################
+    ####### FUNCTIONS ########################################################
+    ##########################################################################
+
+    def remove(self):
+        """
+        Remove the subject from the project
+        """
+        pass
+
+    def __unicode__(self):  return self.name
+    def __str__(self):      return self.__unicode__()
 
 
