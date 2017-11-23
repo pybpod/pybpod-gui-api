@@ -3,7 +3,6 @@ pyserial>=3.1.1
 numpy
 
 # rtd dependencies
-sphinx>=1.5.5
 Sphinx>=1.6.3
 sphinx-autobuild>=0.7.1
 sphinx-rtd-theme>=0.2.4
