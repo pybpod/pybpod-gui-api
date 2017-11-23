@@ -1,13 +1,18 @@
 # 3rd party dependencies
 pyserial>=3.1.1
 numpy
+anyqt
+python-dateutil
+send2trash
+sip
+pyqt5
+matplotlib
 
 # rtd dependencies
 Sphinx>=1.6.3
 sphinx-autobuild>=0.7.1
 sphinx-rtd-theme>=0.2.4
 sphinxcontrib-websupport==1.0.1
-
 recommonmark
 
 # swp dependencies
