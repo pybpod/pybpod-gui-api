@@ -4,7 +4,11 @@ numpy
 
 # rtd dependencies
 sphinx>=1.5.5
-sphinx_rtd_theme>=0.2.4
+Sphinx>=1.6.3
+sphinx-autobuild>=0.7.1
+sphinx-rtd-theme>=0.2.4
+sphinxcontrib-websupport==1.0.1
+
 recommonmark
 
 # swp dependencies
