@@ -4,7 +4,7 @@
 """ pycontrol.api.models.project
 
 """
-import logging
+import logging, uuid
 from pybpodgui_api.models.experiment import Experiment
 from pybpodgui_api.models.board         import Board
 from pybpodgui_api.models.task      import Task
@@ -20,6 +20,7 @@ class ProjectBase(object):
     """
 
     def __init__(self):
+        self.uuid4      = uuid.uuid4()
         self.name           = ''
         self.path           = None
         self._experiments   = []

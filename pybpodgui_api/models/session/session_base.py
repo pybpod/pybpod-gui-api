@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-import os, csv, datetime, logging, dateutil
+import os, datetime, logging, dateutil, pybpodgui_api, uuid
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
 from pybpodgui_api.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
+from sca.formats import csv
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,11 @@ class SessionBase(object):
 
     def __init__(self, setup):
         setup += self
+        
+        self.uuid4              = uuid.uuid4()
         self.setup              = setup
         self.name               = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        self.path               = os.path.join(self.setup.path, "{0}.txt".format(self.name))
+        self.path               = os.path.join(self.setup.path, "{0}.csv".format(self.name))
         self.setup_name         = setup.name
         self.board_name         = setup.board.name if setup.board else None
         self.task_name          = setup.task.name if setup.task else None
@@ -29,19 +32,26 @@ class SessionBase(object):
         self.messages_history   = []
         self.subjects           = []
 
+        self.csvfile    = None
+        self.csvwriter  = None
+
 
     def open(self):
         """
         Open the csv file to write the session data
         """
-        self.csvfile    = open(self.path, 'w+', newline='\n', buffering=1)
-        self.csvwriter  = csv.writer(self.csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-
+        self.csvfile    = open(self.path, 'w')
+        self.csvwriter  = csv.writer(
+            self.csvfile,
+            software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+            def_url='http://pybpod.readthedocs.org',
+            def_text='This file has all the data recorded during a PyBpod session.')
+   
     def close(self):
         """
-        llose the session csv file
+        close the session csv file
         """
-        self.csvfile.close()
+        if self.csvfile: self.csvfile.close()
 
     def log_msg(self, msg): 
         """ 

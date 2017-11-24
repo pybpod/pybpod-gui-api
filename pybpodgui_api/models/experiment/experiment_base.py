@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
+import logging, uuid
 from pybpodgui_api.models.setup import Setup
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ class ExperimentBase(object):
         """
         :ivar Project project: project object reference
         """
+        self.uuid4      = uuid.uuid4()
         self.name = 'Untitled experiment {0}'.format(len(project.experiments))
         self._setups = []
         self.project = project

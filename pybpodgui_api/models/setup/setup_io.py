@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os, json, glob, hashlib
+import os, glob, hashlib
+import pybpodgui_api
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from pybpodgui_api.models.setup.setup_base import SetupBase
+
+from sca.formats import json
 
 logger = logging.getLogger(__name__)
 
@@ -52,16 +55,29 @@ class SetupBaseIO(SetupBase):
             for session in self.sessions:
                 session.save(setup_path)
 
-            data2save = {}
-            data2save.update({'name': self.name})
-            data2save.update({'board': self.board.name if self.board else None})
-            data2save.update({'subjects': [subject.name for subject in self.subjects]})
+            data2save = json.scadict({
+                    'name':     self.name,
+                    'board':    self.board.name if self.board else None,
+                    'subjects': [subject.name for subject in self.subjects]
+                },
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url='http://pybpod.readthedocs.org',
+                def_text='This file contains the configuration of a setup from PyBpod system.')
+
             data2save.update(board_task_data)
 
             self.__clean_sessions_path(setup_path)
 
-            self.__save_on_file(data2save, dest_path=setup_path, filename='setup-settings.json')
+            data2save.add_parent_ref(self.experiment.uuid4)
+            if self.board: 
+                data2save.add_external_ref(self.board.uuid4)
+            for subject in self.subjects:
+                data2save.add_external_ref(subject.uuid4)
 
+            with open(os.path.join(setup_path, 'setup-settings.json'), 'w') as jsonfile:
+                json.dump(data2save, jsonfile)
+                
             self.path = setup_path
 
             return data2save
@@ -73,16 +89,15 @@ class SetupBaseIO(SetupBase):
         :ivar str setup_path: Path of the setup
         :ivar dict data: data object that contains all setup info
         """
-        settings_path = os.path.join(setup_path, 'setup-settings.json')
         self.path = setup_path
+        self.name = os.path.basename(setup_path)
 
-        with open(settings_path, 'r') as output_file:
-            data = json.load(output_file)
-            self.name  = data['name']
+        with open(os.path.join(setup_path, 'setup-settings.json'), 'r') as jsonfile:
+            data       = json.load(jsonfile)
+            self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
             self.board = data.get('board', None)
             for subject_name in data.get('subjects', []):
                 self += self.project.find_subject(subject_name)
-
             self.board_task.load(setup_path, data)
 
         for filepath in self.__list_all_sessions_in_folder(setup_path):
@@ -118,5 +133,5 @@ class SetupBaseIO(SetupBase):
         return os.path.join(setups_path, self.name)
 
     def __list_all_sessions_in_folder(self, setup_path):
-        search_4_files_path = os.path.join(setup_path, '*.txt')
+        search_4_files_path = os.path.join(setup_path, '*.csv')
         return sorted(glob.glob(search_4_files_path))

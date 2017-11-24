@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-import logging, json
+import logging, pybpodgui_api
 from pybpodgui_api.models.subject.subject_base import SubjectBase
+
+from sca.formats import json
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +37,18 @@ class SubjectIO(SubjectBase):
             subject_path = os.path.join(subjects_path, self.name)
             if not os.path.exists(subject_path):  os.makedirs(subject_path)
 
-            data2save = {
-                'name': self.name
-            }
-            settings_path = os.path.join(subject_path, 'subject-settings.json')
-            with open(settings_path, 'w') as output_file:
-                json.dump(data2save, output_file, sort_keys=False, indent=4, separators=(',', ':'))
+            data2save = json.scadict(
+                {'name': self.name},
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url='http://pybpod.readthedocs.org',
+                def_text='This file contains information about a subject used on PyBpod GUI.')
+
+            data2save.add_parent_ref(self.project.uuid4)
+
+            with open(os.path.join(subject_path, 'subject-settings.json'), 'w') as jsonfile:
+                json.dump(data2save, jsonfile)
+            
             self.path = subject_path
 
             return data2save
@@ -52,8 +60,8 @@ class SubjectIO(SubjectBase):
         :ivar str subject_path: Path of the subject
         :ivar dict data: data object that contains all subject info
         """
-        settings_path = os.path.join(subject_path, 'subject-settings.json')
-        with open(settings_path, 'r') as output_file:
-            data = json.load(output_file)
-            
-            self.name        = data['name']
+
+        with open(os.path.join(subject_path, 'subject-settings.json'), 'r') as jsonfile:
+            data      = json.load(jsonfile)
+            self.uuid4= data.uuid4 if data.uuid4 else self.uuid4
+            self.name = data['name']

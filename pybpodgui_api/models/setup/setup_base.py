@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os
+import logging, os, uuid
 from pybpodgui_api.models.setup.board_task import BoardTask
 from pybpodgui_api.models.session import Session
 from pybpodgui_api.models.subject import Subject
@@ -16,6 +16,8 @@ class SetupBase(object):
         """
         :ivar Experiment experiment: Experiment to which the Setup belongs to
         """
+        self.uuid4      = uuid.uuid4()
+        
         self.experiment = experiment
         self.board_task = self.create_board_task()
 
@@ -27,7 +29,7 @@ class SetupBase(object):
             setup_path = os.path.join(setups_path, self.name)
             if not os.path.exists(setup_path): os.makedirs(setup_path)
 
-        self.name = "Untitled box {0}".format(len(self.experiment.setups))
+        self.name = "Untitled setup {0}".format(len(self.experiment.setups))
         self._sessions = []
         self._subjects = []
         self.path   = setup_path

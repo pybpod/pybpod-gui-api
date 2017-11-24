@@ -1,7 +1,10 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import os, csv, datetime, dateutil
+import os, datetime, dateutil
+
+
+
 
 from pybpodgui_api.models.session.session_base 	import SessionBase
 from pybpodgui_api.exceptions.invalid_session 	import InvalidSessionError
@@ -12,6 +15,8 @@ from pybpodgui_api.com.messaging.msg_factory import BpodMessageParser
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
 from pybpodgui_plugin.com.run_handlers.bpod_runner import BpodRunner
+
+from sca.formats import csv 
 
 
 class SessionIO(SessionBase):
@@ -33,11 +38,11 @@ class SessionIO(SessionBase):
 		:param parent_path:
 		:return:
 		"""
-		filename = os.path.basename(self.path).replace('.txt', '')
+		filename = os.path.basename(self.path).replace('.csv', '')
 		filepath = os.path.dirname(self.path)
 
 		if filename != self.name or filepath != parent_path:
-			new_path = os.path.join(parent_path, self.name + '.txt')
+			new_path = os.path.join(parent_path, self.name + '.csv')
 			os.rename(self.path, new_path)
 			self.path = new_path
 
@@ -48,7 +53,7 @@ class SessionIO(SessionBase):
 		:param data:
 		:return:
 		"""
-		self.name = os.path.basename(session_path).replace('.txt', '')
+		self.name = os.path.basename(session_path).replace('.csv', '')
 		self.path = session_path
 
 	def load_contents(self, session_path):
@@ -59,13 +64,12 @@ class SessionIO(SessionBase):
 		"""
 
 		parser = BpodMessageParser()
-		with open(session_path, 'r', newline='\n') as csvfile:
-			csvreader = csv.reader(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+		with open(session_path) as csvfile:
+			csvreader = csv.reader(csvfile)
 			for row in csvreader:
 				msg = parser.fromlist(row)
 				if msg:
 					self.messages_history.append(msg)
-
 
 					if isinstance(msg, SessionInfo):
 						if 	 msg.infoname==Session.INFO_PROTOCOL_NAME:
