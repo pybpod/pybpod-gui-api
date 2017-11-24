@@ -45,7 +45,8 @@ class SessionBase(object):
             self.csvfile,
             software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
             def_url='http://pybpod.readthedocs.org',
-            def_text='This file has all the data recorded during a PyBpod session.')
+            def_text='This file has all the data recorded during a PyBpod session.',
+            columns_headers=['TYPE', 'PC-TIME', 'BPOD-INITIAL-TIME', 'BPOD-FINAL-TIME', 'MSG', '+INFO'])
    
     def close(self):
         """
