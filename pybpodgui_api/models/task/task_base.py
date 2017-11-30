@@ -13,11 +13,11 @@ class TaskBase(object):
         """
         :ivar Project project: Project to which the Task belongs to.
         """
-        self.uuid4      = uuid.uuid4()
+        self.uuid4   = uuid.uuid4()
         self.name    = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
         self.project = project
         self.path    = None
-        self.project   += self
+        self.project += self
         
     ##########################################################################
     ####### PROPERTIES #######################################################

@@ -78,7 +78,7 @@ class BoardTask(object):
         data.update({'variables': [var.collect_data({}) for var in self.variables]})
         return data
 
-    def save(self, setup_path):
+    def save(self):
         """
         Save board task data on filesystem.
 
@@ -86,18 +86,18 @@ class BoardTask(object):
         :return: Dictionary containing the board task info to save.  
         :rtype: dict
         """
-        return {'variables': [var.save(setup_path) for var in self.variables]}
+        return {'variables': [var.save() for var in self.variables]}
 
-    def load(self, setup_path, data):
+    def load(self, data):
         """
         Load setup data from filesystem
 
         :ivar str setup_path: Path of the setup
         :ivar dict data: data object that contains all setup info
         """
-        for data in data.get('variables', []):
+        for var_data in data.get('variables', []):
             var = self.create_variable()
-            var.load(setup_path, data)          
+            var.load(var_data)          
 
 
     def __unicode__(self):

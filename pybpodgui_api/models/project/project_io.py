@@ -7,6 +7,7 @@ import glob
 import hashlib, pybpodgui_api
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from sca.formats import json
+from sca.storage.repository import Repository
 
 from pybpodgui_api.models.project.project_base import ProjectBase
 
@@ -17,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 class ProjectIO(ProjectBase):
 
+    def __init__(self):
+        super(ProjectIO, self).__init__()
+
+        self.repository = None
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -28,51 +33,146 @@ class ProjectIO(ProjectBase):
 
         :ivar str project_path: Full path of the project to load.
         """
+        self.repository = repository = Repository(project_path).open()
 
-        settings_path = os.path.join(project_path, 'project-settings.json')
+        print()
+        repository.pprint()
+        print()
 
-        if not os.path.exists(settings_path):
-            raise APIError("Project settings path not found: {0}".format(settings_path))
+        self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
+        self.name = repository.get('name', None)
+        self.path = repository.path
+        
+        logger.debug("==== LOAD TASKS ====")
 
-        with open(settings_path, 'r') as jsonfile:
-            data      = json.load(jsonfile)
-            self.uuid4= data.uuid4 if data.uuid4 else self.uuid4
-            self.name = data['name']
-            
-            logger.debug("==== LOAD TASKS ====")
+        for infolder, path in self.__list_all_tasks_in_folder(project_path):
+            task = self.create_task()
+            task.load(path, {})
 
-            for infolder, path in self.__list_all_tasks_in_folder(project_path):
-                task = self.create_task()
-                task.load(path, {})
+        logger.debug("==== LOAD BOARDS ====")
 
-            logger.debug("==== LOAD BOARDS ====")
+        # load boards
+        for repo in repository.find('boards').list():
+            board = self.create_board()
+            board.load(repo)
 
-            # load boards
-            for path in self.__list_all_boards_in_folder(project_path):
-                board = self.create_board()
-                board.load(path, {})
+        logger.debug("==== LOAD SUBJECTS ====")
 
-            logger.debug("==== LOAD SUBJECTS ====")
+        # load subjectgs
+        for repo in repository.find('subjects').list():
+            subject = self.create_subject()
+            subject.load(repo)
 
-            # load experiments
-            for path in self.__list_all_subjects_in_folder(project_path):
-                subject = self.create_subject()
-                subject.load(path, {})
+        logger.debug("==== LOAD EXPERIMENTS ====")
 
-            logger.debug("==== LOAD EXPERIMENTS ====")
+        # load experiments
+        for repo in repository.find('experiments').list():
+            experiment = self.create_experiment()
+            experiment.load(repo)
+        
+        logger.debug("==== LOAD FINNISHED ====")
 
-            # load experiments
-            for path in self.__list_all_experiments_in_folder(project_path):
-                experiment = self.create_experiment()
-                experiment.load(path, {})
+        
 
-            
 
-            self.__save_project_hash()
 
-            logger.debug("==== LOAD FINNISHED ====")
 
-        self.path = project_path
+
+
+
+
+
+    def save(self, project_path):
+        """
+        Save project data on file
+        :param str project_path: path to project
+        :return: project data saved on settings file
+        """
+        logger.debug("saving project path: %s",  project_path)
+        logger.debug("current project name: %s", self.name)
+        logger.debug("current project path: %s", self.path)
+
+        if not self.path and os.path.exists(project_path):
+            raise FileExistsError("Project folder already exists")
+
+        # Check if we are updating a repository previously loaded or creating a new one.
+        if self.repository:
+
+            if project_path==self.repository.path:
+                # If we are saving to the same folder,
+                # then we are going to do a repository update.
+                repository = self.repository
+            else:
+                # If we are saving the repository to a diferent path,
+                # then we are going to do a "save as".
+                repository = Repository(project_path)
+        else:
+            repository = Repository(project_path)
+
+        self.path = repository.path
+
+
+
+        ########### SAVE THE TASKS ###########
+        for task in self.tasks:
+            task_repo = repository.sub_repository('tasks', task.name, uuid4=task.uuid4)
+            task.save(task_repo)
+
+        """
+        # remove from the tasks directory the unused tasks files
+        tasks_paths = [task.path for task in self.tasks]
+        for infolder, path in self.__list_all_tasks_in_folder(project_path):
+            if path not in tasks_paths:
+                logger.debug("Sending file [{0}] to trash".format(path))
+                if infolder:
+                    send2trash(os.path.dirname(path))
+                else:
+                    send2trash(path)
+        """
+
+        
+        ########### SAVE THE BOARDS ###########
+        boards_repo = repository.find('boards')
+        for board in self.boards:
+            board.save( 
+                repository.sub_repository('boards', board.name, uuid4=board.uuid4)
+            )
+
+        #self.__clean_boards_path(project_path)
+
+        ########### SAVE THE EXPERIMENTS ############
+        for experiment in self.experiments:
+            experiment.save(repository.sub_repository('experiments', experiment.name, uuid4=experiment.uuid4))
+
+        #self.__clean_experiments_path(project_path)
+
+        ########### SAVE THE SUBJECTS ###############
+        for subject in self.subjects:
+            subject.save(repository.sub_repository('subjects', subject.name, uuid4=subject.uuid4))
+
+        #self.__clean_subjects_path(project_path)
+
+        ########### SAVE THE PROJECT ############
+
+        # create root nodes
+        repository.uuid4    = self.uuid4
+        repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
+        repository.def_url  = 'http://pybpod.readthedocs.org'
+        repository.def_text = 'This file contains information about a PyBpod project.'
+        repository['name']  = self.name
+
+        repository.save()   # mark the repository to be saved
+        
+        repository.pprint()
+
+        return repository
+
+
+
+
+
+
+
 
 
     def is_saved(self):
@@ -120,79 +220,7 @@ class ProjectIO(ProjectBase):
         return hashlib.sha256(
             json.dumps(self.collect_data(data={}), sort_keys=True).encode('utf-8')).hexdigest()
 
-    def save(self, project_path):
-        """
-        Save project data on file
-        :param str project_path: path to project
-        :return: project data saved on settings file
-        """
-        logger.debug("Saving project path: %s", project_path)
-        logger.debug("Current project name: %s", self.name)
-        logger.debug("Current project path: %s", self.path)
-
-        if not self.path and os.path.exists(project_path):
-            raise FileExistsError("Project folder already exists")
-
-        if not os.path.exists(project_path):
-            os.mkdir(project_path)
-            logger.debug("Created project dir: {}".format(project_path))
-
-        ########### SAVE THE TASKS ###########
-        logger.debug("Saving tasks to {0}".format(project_path))
-
-        for task in self.tasks: task.save(project_path, {})
-
-        # remove from the tasks directory the unused tasks files
-        tasks_paths = [task.path for task in self.tasks]
-        for infolder, path in self.__list_all_tasks_in_folder(project_path):
-            if path not in tasks_paths:
-                logger.debug("Sending file [{0}] to trash".format(path))
-                if infolder:
-                    send2trash(os.path.dirname(path))
-                else:
-                    send2trash(path)
-
-        ########### SAVE THE BOARDS ###########
-        logger.debug("Saving boards to {0}".format(project_path))
-
-        for board in self.boards:
-            board.save(project_path)
-        self.__clean_boards_path(project_path)
-
-        ########### SAVE THE EXPERIMENTS ############
-        logger.debug("Saving experiments to {0}".format(project_path))
-
-        for experiment in self.experiments:
-            experiment.save(project_path)
-
-        self.__clean_experiments_path(project_path)
-
-        ########### SAVE THE SUBJECTS ###############
-        logger.debug("Saving subjects to {0}".format(project_path))
-
-        for subject in self.subjects:
-            subject.save(project_path)
-
-        self.__clean_subjects_path(project_path)
-
-        ########### SAVE THE PROJECT ############
-
-        # create root nodes
-        data2save = json.scadict(
-            {'name': self.name},
-            uuid4_id=self.uuid4,
-            software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-            def_url='http://pybpod.readthedocs.org',
-            def_text='This file contains information about a PyBpod project.')
-
-        with open(os.path.join(project_path, 'project-settings.json'), 'w') as jsonfile:
-            json.dump(data2save, jsonfile)
-
-        self.path = project_path
-
-        self.__save_project_hash()
-
-        return data2save
+    
 
     ##########################################################################
     ####### AUXILIAR FUNCTIONS ###############################################

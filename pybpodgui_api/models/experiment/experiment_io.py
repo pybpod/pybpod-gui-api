@@ -33,7 +33,7 @@ class ExperimentIO(ExperimentBase):
 
         return data
 
-    def save(self, parent_path):
+    def save(self, repository):
         """
         Save experiment data on filesystem.
 
@@ -41,63 +41,43 @@ class ExperimentIO(ExperimentBase):
         :return: Dictionary containing the experiment info to save.  
         :rtype: dict
         """
-        #generate the experiments folder if does not exists
-        experiments_path = self.__generate_experiments_path(parent_path)
-        if not os.path.exists(experiments_path):
-            os.makedirs(experiments_path)
-
-        #generate the experiment folder if does not exists
-        experiment_path = self.__generate_experiment_path(experiments_path)
-        if not os.path.exists(experiment_path):
-            os.makedirs(experiment_path)
-
         # save setups
         for setup in self.setups:
-            setup.save(parent_path=experiment_path)
+            setup.save(repository.sub_repository('setups', setup.name, uuid4=setup.uuid4))
 
-        data2save = json.scadict({
-                'name': self.name,
-                'task': self.task.name if self.task else None
-            },
-            uuid4_id=self.uuid4,
-            software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-            def_url ='http://pybpod.readthedocs.org',
-            def_text='This file contains information about a PyBpod gui experiment.'
-        )
-        
-        data2save.add_parent_ref(self.project.uuid4)
-        if self.task: data2save.add_external_ref(self.task.uuid4)
+        repository.uuid4    = self.uuid4
+        repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
+        repository.def_url  = 'http://pybpod.readthedocs.org'
+        repository.def_text = 'This file contains information about a PyBpod gui experiment.'
+        repository['name']  = self.name
+        repository['task']  = self.task.name if self.task else None
 
-        self.path = experiment_path
+        repository.add_parent_ref(self.project.uuid4)
+        if self.task:
+            repository.add_external_ref(self.task.uuid4)
 
-        self.__clean_setups_path(experiment_path)  # call only after update setups
-
-        with open(os.path.join(experiment_path, 'experiment-settings.json'), 'w') as jsonfile:
-            json.dump(data2save, jsonfile)
-        
-        return data2save
+        self.path = repository.save()
+        return repository
 
 
-    def load(self, experiment_path, data):
+    def load(self, repository):
         """
         Load experiment data from filesystem
 
         :ivar str experiment_path: Path of the experiment
         :ivar dict data: data object that contains all experiment info
         :return: Dictionary with loaded experiment info.
-        """
+        """       
+        self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
+        self.name = repository.get('name', None)
+        self.task = repository.get('task', None)
+        self.path = repository.path
 
-        with open(os.path.join(experiment_path, 'experiment-settings.json'), 'r') as jsonfile:
-            data = json.load(jsonfile)
-            self.uuid4= data.uuid4 if data.uuid4 else self.uuid4
-            self.name = data['name']
-            self.task = data.get('task', None)
-
-        for path in self.__list_all_setups_in_folder(experiment_path):
+        for repo in repository.find('setups').list():
             setup = self.create_setup()
-            setup.load(path, {})
+            setup.load(repo)
 
-        self.path = experiment_path
+        
 
 
 

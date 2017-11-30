@@ -5,8 +5,8 @@ import os
 import logging
 import pybpodgui_api
 from pybpodgui_api.models.board.board_base import BoardBase
-
 from sca.formats import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class BoardIO(BoardBase):
 
         return data
 
-    def save(self, parent_path):
+    def save(self, repository):
         """
         Save experiment data on filesystem.
 
@@ -41,54 +41,36 @@ class BoardIO(BoardBase):
             logger.warning("Skipping board without name")
             return None
         else:
-            # create the boards path if does not exist
-            boards_path = self.__generate_boards_path(parent_path)
-            if not os.path.exists(boards_path):
-                os.makedirs(boards_path)
+            repository.uuid4    = self.uuid4
+            repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
+            repository.def_url  = 'http://pybpod.readthedocs.org'
+            repository.def_text = 'This file contains the configuration of Bpod board.'
+            repository['name']          = self.name
+            repository['serial_port']   = self.serial_port
+            repository['enabled-bncports']      = self.enabled_bncports
+            repository['enabled-wiredports']    = self.enabled_wiredports
+            repository['enabled-behaviorports'] = self.enabled_behaviorports
 
-            # create the board path if does not exists
-            board_path = self.__generate_board_path(boards_path)
-            if not os.path.exists(board_path):
-                os.makedirs(board_path)
+            repository.add_parent_ref(self.project.uuid4)
+            
+            self.path = repository.save()
 
-            data2save = json.scadict({
-                    'name':                     self.name,
-                    'serial_port':              self.serial_port,
-                    'enabled-bncports':         self.enabled_bncports,
-                    'enabled-wiredports':       self.enabled_wiredports,
-                    'enabled-behaviorports':    self.enabled_behaviorports,
-                },
-                uuid4_id=self.uuid4,
-                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-                def_url ='http://pybpod.readthedocs.org',
-                def_text='This file contains the configuration of Bpod board.'
-            )
-            data2save.add_parent_ref(self.project.uuid4)
+            return repository
 
-            with open(os.path.join(board_path, 'board-settings.json'), 'w') as jsonfile:
-                json.dump(data2save, jsonfile)
-
-            self.path = board_path
-            return data2save
-
-    def load(self, board_path, data):
+    def load(self, repository):
         """
         Load board data from filesystem
 
         :ivar str board_path: Path of the board
         :ivar dict data: data object that contains all board info
         """
-
-        with open(os.path.join(board_path, 'board-settings.json'), 'r') as jsonfile:
-            data = json.load(jsonfile)
-            self.uuid4                  = data.uuid4 if data.uuid4 else self.uuid4
-            self.name                   = data['name']
-            self.serial_port            = data['serial_port']
-            self.enabled_bncports       = data.get('enabled-bncports',      None)
-            self.enabled_wiredports     = data.get('enabled-wiredports',    None)
-            self.enabled_behaviorports  = data.get('enabled-behaviorports', None)
-
-        self._path = board_path
+        self.uuid4                  = repository.uuid4 if repository.uuid4 else self.uuid4
+        self.name                   = repository.get('name',                  None)
+        self.serial_port            = repository.get('serial_port',           None)
+        self.enabled_bncports       = repository.get('enabled-bncports',      None)
+        self.enabled_wiredports     = repository.get('enabled-wiredports',    None)
+        self.enabled_behaviorports  = repository.get('enabled-behaviorports', None)
+        self._path                  = repository.path
 
 
     def __generate_boards_path(self, project_path):
