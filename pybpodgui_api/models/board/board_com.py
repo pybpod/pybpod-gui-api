@@ -110,6 +110,8 @@ conf += RunnerSettings
             protocolname    = board_task.task.name
         )
 
+        self.status = self.STATUS_RUNNING_TASK
+
         AsyncBpod.run_protocol(self,
             bpod_settings,
             board_task.task.path,
@@ -143,6 +145,7 @@ conf += RunnerSettings
                 self._running_session.close() 
                 self._running_task = None
                 self._running_session = None
+                self.status = self.STATUS_READY
         except Exception as err:
             self.log_session_history( StderrMessage(err) )
             self._running_session.close() 
@@ -152,4 +155,5 @@ conf += RunnerSettings
 
             self._running_task = None
             self._running_session = None
+            self.status = self.STATUS_READY
             raise err
