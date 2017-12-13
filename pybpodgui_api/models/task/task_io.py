@@ -19,7 +19,7 @@ class TaskIO(TaskBase):
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
-    def save(self, project_path, data):
+    def save(self, repository):
         """
         Save setup data on filesystem.
 
@@ -28,19 +28,16 @@ class TaskIO(TaskBase):
         :return: Dictionary containing the task info to save.  
         :rtype: dict
         """
-        tasks_path = os.path.join(project_path, 'tasks')
-        if not os.path.exists(tasks_path): os.makedirs(tasks_path)
-
-        task_folder = os.path.join(tasks_path, self.name)
-        if not os.path.exists(task_folder): os.makedirs(task_folder)
-
-        new_task_path = os.path.join(task_folder, self.name) + '.py'
+        new_task_path = os.path.join(repository.path, self.name) + '.py'
 
         if self.path != new_task_path:
             # if the task file is not in the project file, it makes a copy to the project folder
             code_txt = self.code if self.path else ''
             self.path = new_task_path
             self.code = code_txt
+
+        repository.uuid4 = self.uuid4
+        repository.save()
 
 
     def load(self, task_path, data):

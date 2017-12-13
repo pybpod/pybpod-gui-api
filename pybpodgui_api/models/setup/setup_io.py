@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os, json, glob, hashlib
+import os, glob, hashlib
+import pybpodgui_api
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from pybpodgui_api.models.setup.setup_base import SetupBase
+
+from sca.formats import json
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +29,7 @@ class SetupBaseIO(SetupBase):
         return data
 
 
-    def save(self, parent_path):
+    def save(self, repository):
         """
         Save setup data on filesystem.
 
@@ -37,55 +40,52 @@ class SetupBaseIO(SetupBase):
         if not self.name:
             logger.warning("Skipping setup without name")
         else:
-            setups_path = self.__generate_setups_path(experiment_path=parent_path)
-            if not os.path.exists(setups_path):
-                os.makedirs(setups_path)
-
-            setup_path = self.__generate_setup_path(setups_path)
-            if not os.path.exists(setup_path):
-                os.makedirs(setup_path)
-
-            # collect board_task data
-            board_task_data = self.board_task.save(parent_path)
-
             # save sessions
-            for session in self.sessions:
-                session.save(setup_path)
+            for session in self.sessions: session.save(repository)
 
-            data2save = {}
-            data2save.update({'name': self.name})
-            data2save.update({'board': self.board.name if self.board else None})
-            data2save.update({'subjects': [subject.name for subject in self.subjects]})
-            data2save.update(board_task_data)
+            repository.uuid4    = self.uuid4
+            repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
+            repository.def_url  = 'http://pybpod.readthedocs.org'
+            repository.def_text = 'This file contains the configuration of a setup from PyBpod system.'
+            repository['name']      = self.name
+            repository['board']     = self.board.name if self.board else None
+            repository['subjects']  = [subject.name for subject in self.subjects]
 
-            self.__clean_sessions_path(setup_path)
+            
+            # collect board_task data
+            repository.update(self.board_task.save())
 
-            self.__save_on_file(data2save, dest_path=setup_path, filename='setup-settings.json')
+            #self.__clean_sessions_path(setup_path)
 
-            self.path = setup_path
+            repository.add_parent_ref(self.experiment.uuid4)
+            if self.board: 
+                repository.add_external_ref(self.board.uuid4)
+            for subject in self.subjects:
+                repository.add_external_ref(subject.uuid4)
 
-            return data2save
+            self.path = repository.save()
 
-    def load(self, setup_path, data):
+            return repository
+
+    def load(self, repository):
         """
         Load setup data from filesystem
 
         :ivar str setup_path: Path of the setup
         :ivar dict data: data object that contains all setup info
         """
-        settings_path = os.path.join(setup_path, 'setup-settings.json')
-        self.path = setup_path
+        self.path = repository.path
+        self.name = repository.name
 
-        with open(settings_path, 'r') as output_file:
-            data = json.load(output_file)
-            self.name  = data['name']
-            self.board = data.get('board', None)
-            for subject_name in data.get('subjects', []):
-                self += self.project.find_subject(subject_name)
-
-            self.board_task.load(setup_path, data)
-
-        for filepath in self.__list_all_sessions_in_folder(setup_path):
+        self.uuid4 = repository.uuid4 if repository.uuid4 else self.uuid4
+        self.board = repository.get('board', None)
+        
+        self.board_task.load(repository)
+        
+        for subject_name in repository.get('subjects', []):
+            self += self.project.find_subject(subject_name)
+        
+        for filepath in self.__list_all_sessions_in_folder(repository.path):
             session = self.create_session()
             session.load(filepath, {})
 
@@ -118,5 +118,5 @@ class SetupBaseIO(SetupBase):
         return os.path.join(setups_path, self.name)
 
     def __list_all_sessions_in_folder(self, setup_path):
-        search_4_files_path = os.path.join(setup_path, '*.txt')
+        search_4_files_path = os.path.join(setup_path, '*.csv')
         return sorted(glob.glob(search_4_files_path))

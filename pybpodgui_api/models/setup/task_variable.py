@@ -57,7 +57,7 @@ class TaskVariable(object):
         data.update({'datatype': str(self.datatype)})
         return data
 
-    def save(self, setup_path):
+    def save(self):
         """
         Save variable data on filesystem.
 
@@ -71,7 +71,7 @@ class TaskVariable(object):
         data2save.update({'datatype': str(self.datatype)})
         return data2save
 
-    def load(self, setup_path, data):
+    def load(self, data):
         """
         Load variable data from filesystem
 
