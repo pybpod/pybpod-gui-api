@@ -22,6 +22,7 @@ class ProjectIO(ProjectBase):
         super(ProjectIO, self).__init__()
 
         self.repository = None
+        self.data_hash  = None
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -73,7 +74,8 @@ class ProjectIO(ProjectBase):
         logger.debug("==== LOAD FINNISHED ====")
 
         
-
+        self.data_hash = self.__generate_project_hash()
+        
 
 
 
