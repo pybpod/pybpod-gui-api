@@ -65,7 +65,7 @@ class BoardIO(BoardBase):
         :ivar dict data: data object that contains all board info
         """
         self.uuid4                  = repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name                   = repository.get('name',                  None)
+        self.name                   = repository.name
         self.serial_port            = repository.get('serial_port',           None)
         self.enabled_bncports       = repository.get('enabled-bncports',      None)
         self.enabled_wiredports     = repository.get('enabled-wiredports',    None)

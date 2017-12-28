@@ -118,5 +118,8 @@ class SetupBaseIO(SetupBase):
         return os.path.join(setups_path, self.name)
 
     def __list_all_sessions_in_folder(self, setup_path):
-        search_4_files_path = os.path.join(setup_path, '*.csv')
-        return sorted(glob.glob(search_4_files_path))
+        files2search = os.path.join(setup_path, '*.txt')
+        result = list(glob.glob(files2search))
+        files2search = os.path.join(setup_path, '*.csv')
+        result += list(glob.glob(files2search))
+        return sorted(result)
