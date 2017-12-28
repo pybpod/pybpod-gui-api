@@ -41,7 +41,7 @@ class ProjectIO(ProjectBase):
         print()
 
         self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name = repository.get('name', None)
+        self.name = repository.name
         self.path = repository.path
         
         logger.debug("==== LOAD TASKS ====")
