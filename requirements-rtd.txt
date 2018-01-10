@@ -24,3 +24,4 @@ git+https://UmSenhorQualquer@bitbucket.org/fchampalimaud/pybranch.git
 git+https://UmSenhorQualquer@bitbucket.org/fchampalimaud/pyforms-generic-editor.git
 git+https://UmSenhorQualquer@bitbucket.org/fchampalimaud/pybpod-gui-plugin.git
 git+https://UmSenhorQualquer@bitbucket.org/fchampalimaud/pybpod-rotary-encoder-module.git
+git+https://UmSenhorQualquer@bitbucket.org/fchampalimaud/safe-collaborative-architecture.git
