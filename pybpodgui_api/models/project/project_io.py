@@ -1,4 +1,4 @@
-# !/usr/bin/python
+ # !/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import os
@@ -73,7 +73,7 @@ class ProjectIO(ProjectBase):
         logger.debug("==== LOAD FINNISHED ====")
 
         
-
+        self.data_hash = self.__generate_project_hash()
 
 
 

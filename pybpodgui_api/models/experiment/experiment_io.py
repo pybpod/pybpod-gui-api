@@ -67,7 +67,7 @@ class ExperimentIO(ExperimentBase):
         :ivar str experiment_path: Path of the experiment
         :ivar dict data: data object that contains all experiment info
         :return: Dictionary with loaded experiment info.
-        """       
+        """
         self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
         self.name = repository.get('name', None)
         self.task = repository.get('task', None)

@@ -22,7 +22,7 @@ class SessionBase(object):
         self.uuid4              = uuid.uuid4()
         self.setup              = setup
         self.name               = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        self.path               = os.path.join(self.setup.path, "{0}.csv".format(self.name))
+        self.path               = os.path.join(self.setup.path, 'sessions', self.name, "{0}.csv".format(self.name))
         self.setup_name         = setup.name
         self.board_name         = setup.board.name if setup.board else None
         self.task_name          = setup.task.name if setup.task else None

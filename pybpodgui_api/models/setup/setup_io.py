@@ -41,7 +41,14 @@ class SetupBaseIO(SetupBase):
             logger.warning("Skipping setup without name")
         else:
             # save sessions
-            for session in self.sessions: session.save(repository)
+            for session in self.sessions:     
+                rep = repository.sub_repository(
+                    'sessions',
+                    session.name, 
+                    uuid4=session.uuid4,
+                    fileformat='csv'
+                )
+                session.save(rep)
 
             repository.uuid4    = self.uuid4
             repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
@@ -85,9 +92,9 @@ class SetupBaseIO(SetupBase):
         for subject_name in repository.get('subjects', []):
             self += self.project.find_subject(subject_name)
         
-        for filepath in self.__list_all_sessions_in_folder(repository.path):
+        for repo in repository.find('sessions').list():
             session = self.create_session()
-            session.load(filepath, {})
+            session.load(repo)
 
         self._sessions = sorted(self.sessions, key=lambda x: x.started)
 
