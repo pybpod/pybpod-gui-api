@@ -73,9 +73,11 @@ class ExperimentIO(ExperimentBase):
         self.task = repository.get('task', None)
         self.path = repository.path
 
-        for repo in repository.find('setups').list():
-            setup = self.create_setup()
-            setup.load(repo)
+        setups_repos = repository.find('setups')
+        if setups_repos is not None:
+            for repo in setups_repos.list():
+                setup = self.create_setup()
+                setup.load(repo)
 
         
 

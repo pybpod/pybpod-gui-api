@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import os, csv, datetime, logging, dateutil
+import os, csv, datetime, logging, dateutil, uuid
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
 from pybpodgui_api.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
@@ -17,6 +17,8 @@ class SessionBase(object):
 
     def __init__(self, setup):
         setup += self
+        self.uuid4      = uuid.uuid4()
+        
         self.setup              = setup
         self.name               = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         self.path               = os.path.join(self.setup.path, "{0}.txt".format(self.name))

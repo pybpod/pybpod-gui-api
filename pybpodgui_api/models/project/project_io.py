@@ -53,23 +53,29 @@ class ProjectIO(ProjectBase):
         logger.debug("==== LOAD BOARDS ====")
 
         # load boards
-        for repo in repository.find('boards').list():
-            board = self.create_board()
-            board.load(repo)
+        boards_repo = repository.find('boards')
+        if boards_repo is not None:
+            for repo in boards_repo.list():
+                board = self.create_board()
+                board.load(repo)
 
         logger.debug("==== LOAD SUBJECTS ====")
 
-        # load subjectgs
-        for repo in repository.find('subjects').list():
-            subject = self.create_subject()
-            subject.load(repo)
+        # load subjects
+        subjects_repo = repository.find('subjects')
+        if subjects_repo is not None:
+            for repo in subjects_repo.list():
+                subject = self.create_subject()
+                subject.load(repo)
 
         logger.debug("==== LOAD EXPERIMENTS ====")
 
         # load experiments
-        for repo in repository.find('experiments').list():
-            experiment = self.create_experiment()
-            experiment.load(repo)
+        experiments_repo = repository.find('experiments')
+        if experiments_repo is not None:
+            for repo in experiments_repo.list():
+                experiment = self.create_experiment()
+                experiment.load(repo)
         
         logger.debug("==== LOAD FINNISHED ====")
 
