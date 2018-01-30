@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, uuid
+import logging, os
 from pybpodgui_api.models.setup.board_task import BoardTask
 from pybpodgui_api.models.session import Session
 
@@ -12,8 +12,6 @@ class SubjectBase(object):
 
     def __init__(self, project):
         self._path      = None
-
-        self.uuid4      = uuid.uuid4()
         
         self.name       = 'Untitled subject {0}'.format(len(project.subjects))
         self.project    = project
@@ -23,6 +21,21 @@ class SubjectBase(object):
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
+
+    def get_sessions(self):
+        """
+        Get all subject sessions
+
+        :rtype: list(Session)
+        """
+
+        for exp in self.project.experiments:
+            for setup in exp.setups:
+                for session in setup.sessions:
+                    if self in session.subjects:
+                        yield session
+        
+        return None
 
     @property
     def name(self):

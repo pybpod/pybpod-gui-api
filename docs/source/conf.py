@@ -15,14 +15,8 @@
 
 import sys
 import os
-
-sys.path.insert(0, os.path.abspath('../../pybpodgui_api'))
-sys.path.insert(0, os.path.abspath('../../'))
-
-import pybpodgui_api
-
+import shlex
 import recommonmark.parser
-
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
