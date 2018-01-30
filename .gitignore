@@ -6,3 +6,5 @@ docs/build/doctrees/
 docs/app\.log
 
 *.log
+
+*.pyc
