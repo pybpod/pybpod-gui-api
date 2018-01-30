@@ -1,12 +1,9 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, hashlib
-import pybpodgui_api
+import logging, os, json, hashlib
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from pybpodgui_api.models.experiment.experiment_base import ExperimentBase
-
-from sca.formats import json
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +30,7 @@ class ExperimentIO(ExperimentBase):
 
         return data
 
-    def save(self, repository):
+    def save(self, parent_path):
         """
         Save experiment data on filesystem.
 
@@ -41,45 +38,65 @@ class ExperimentIO(ExperimentBase):
         :return: Dictionary containing the experiment info to save.  
         :rtype: dict
         """
+        experiments_path = self.__generate_experiments_path(parent_path)
+        if not os.path.exists(experiments_path):
+            os.makedirs(experiments_path)
+
+        experiment_path = self.__generate_experiment_path(experiments_path)
+        if not os.path.exists(experiment_path):
+            os.makedirs(experiment_path)
+
         # save setups
         for setup in self.setups:
-            setup.save(repository.sub_repository('setups', setup.name, uuid4=setup.uuid4))
+            setup.save(parent_path=experiment_path)
 
-        repository.uuid4    = self.uuid4
-        repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
-        repository.def_url  = 'http://pybpod.readthedocs.org'
-        repository.def_text = 'This file contains information about a PyBpod gui experiment.'
-        repository['name']  = self.name
-        repository['task']  = self.task.name if self.task else None
+        data2save = {
+            'name': self.name,
+            'task': self.task.name if self.task else None
+        }
 
-        repository.add_parent_ref(self.project.uuid4)
-        if self.task:
-            repository.add_external_ref(self.task.uuid4)
+        self.path = experiment_path
 
-        self.path = repository.save()
-        return repository
+        self.__clean_setups_path(experiment_path)  # call only after update setups
 
+        self.__save_on_file(data2save, dest_path=experiment_path, filename='experiment-settings.json')
 
-    def load(self, repository):
+        return data2save
+
+    def load(self, experiment_path, data):
         """
         Load experiment data from filesystem
 
         :ivar str experiment_path: Path of the experiment
         :ivar dict data: data object that contains all experiment info
         :return: Dictionary with loaded experiment info.
+        :rtype: dict
         """
-        self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name = repository.get('name', None)
-        self.task = repository.get('task', None)
-        self.path = repository.path
+        settings_path = os.path.join(experiment_path, 'experiment-settings.json')
+        with open(settings_path, 'r') as output_file:
+            data = json.load(output_file)
 
-        for repo in repository.find('setups').list():
-            setup = self.create_setup()
-            setup.load(repo)
+            self.name = data['name']
+            self.task = data.get('task', None)
 
-        
+            for path in self.__list_all_setups_in_folder(experiment_path):
+                setup = self.create_setup()
+                setup.load(path, {})
 
+            self.path = experiment_path
 
+        return data
+
+    def __save_on_file(self, data2save, dest_path, filename):
+        """
+        Dump data on file
+        :param data2save:
+        :param dest_path:
+        :param filename:
+        """
+        settings_path = os.path.join(dest_path, filename)
+        with open(settings_path, 'w') as output_file:
+            json.dump(data2save, output_file, sort_keys=False, indent=4, separators=(',', ':'))
 
     def __clean_setups_path(self, experiment_path):
         # remove from the setups directory the unused setup files

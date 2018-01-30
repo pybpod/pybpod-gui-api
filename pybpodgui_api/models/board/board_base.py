@@ -6,7 +6,7 @@ A board represents the hardware that controls the running session for a specific
 """
 
 import os
-import logging, uuid
+import logging
 logger = logging.getLogger(__name__)
 
 
@@ -19,9 +19,7 @@ class BoardBase(object):
         """
         :ivar Project project: Project to which the Board belongs to.
         """
-        self.uuid4 = uuid.uuid4()
-
-        self.name  = 'Untitled board {0}'.format(len(project.boards))
+        self.name = 'Untitled box {0}'.format(len(project.boards))
         self.serial_port = None
         self.project = project
 

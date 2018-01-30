@@ -2,11 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-import logging
-import pybpodgui_api
+import logging, json
 from pybpodgui_api.models.board.board_base import BoardBase
-from sca.formats import json
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +26,7 @@ class BoardIO(BoardBase):
 
         return data
 
-    def save(self, repository):
+    def save(self, parent_path):
         """
         Save experiment data on filesystem.
 
@@ -41,40 +38,62 @@ class BoardIO(BoardBase):
             logger.warning("Skipping board without name")
             return None
         else:
-            repository.uuid4    = self.uuid4
-            repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
-            repository.def_url  = 'http://pybpod.readthedocs.org'
-            repository.def_text = 'This file contains the configuration of Bpod board.'
-            repository['name']          = self.name
-            repository['serial_port']   = self.serial_port
-            repository['enabled-bncports']      = self.enabled_bncports
-            repository['enabled-wiredports']    = self.enabled_wiredports
-            repository['enabled-behaviorports'] = self.enabled_behaviorports
+            boards_path = self.__generate_boards_path(parent_path)
+            if not os.path.exists(boards_path):
+                os.makedirs(boards_path)
 
-            repository.add_parent_ref(self.project.uuid4)
-            
-            self.path = repository.save()
+            board_path = self.__generate_board_path(boards_path)
+            if not os.path.exists(board_path):
+                os.makedirs(board_path)
 
-            return repository
+            data2save = {
+                'name':                     self.name,
+                'serial_port':              self.serial_port,
+                'enabled-bncports':         self.enabled_bncports,
+                'enabled-wiredports':       self.enabled_wiredports,
+                'enabled-behaviorports':    self.enabled_behaviorports,
+            }
 
-    def load(self, repository):
+            self.__save_on_file(data2save, board_path, 'board-settings.json')
+
+            self.path = board_path
+
+            return data2save
+
+    def load(self, board_path, data):
         """
         Load board data from filesystem
 
         :ivar str board_path: Path of the board
         :ivar dict data: data object that contains all board info
         """
-        self.uuid4                  = repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name                   = repository.get('name',                  None)
-        self.serial_port            = repository.get('serial_port',           None)
-        self.enabled_bncports       = repository.get('enabled-bncports',      None)
-        self.enabled_wiredports     = repository.get('enabled-wiredports',    None)
-        self.enabled_behaviorports  = repository.get('enabled-behaviorports', None)
-        self._path                  = repository.path
+        settings_path = os.path.join(board_path, 'board-settings.json')
+        with open(settings_path, 'r') as output_file:
+            data = json.load(output_file)
+            
+            self.name        = data['name']
+            self.serial_port = data['serial_port']
+            self._path       = board_path
 
+            self.enabled_bncports       = data.get('enabled-bncports',      None)
+            self.enabled_wiredports     = data.get('enabled-wiredports',    None)
+            self.enabled_behaviorports = data.get('enabled-behaviorports', None)
+
+            
 
     def __generate_boards_path(self, project_path):
         return os.path.join(project_path, 'boards')
 
     def __generate_board_path(self, boards_path):
         return os.path.join(boards_path, self.name)
+
+    def __save_on_file(self, data2save, dest_path, filename):
+        """
+        Dump data on file
+        :param data2save:
+        :param dest_path:
+        :param filename:
+        """
+        settings_path = os.path.join(dest_path, filename)
+        with open(settings_path, 'w') as output_file:
+            json.dump(data2save, output_file, sort_keys=False, indent=4, separators=(',', ':'))

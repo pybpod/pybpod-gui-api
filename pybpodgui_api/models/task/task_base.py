@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, uuid
+import logging, os
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 
 logger = logging.getLogger(__name__)
@@ -13,11 +13,10 @@ class TaskBase(object):
         """
         :ivar Project project: Project to which the Task belongs to.
         """
-        self.uuid4   = uuid.uuid4()
         self.name    = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
         self.project = project
         self.path    = None
-        self.project += self
+        self.project   += self
         
     ##########################################################################
     ####### PROPERTIES #######################################################

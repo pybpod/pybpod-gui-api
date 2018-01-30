@@ -78,10 +78,6 @@ class BoardCom(AsyncBpod, BoardIO):
         :ivar BoardTask board_task: Configuration to run session.  
         :ivar str workspace_path: Not used. To be removed in the future.  
         """
-        #create the directories if they do not exists
-        directory = os.path.dirname(session.path)
-        os.makedirs(directory, exist_ok=True)
-
         
         self._session_log_file  = open(session.path, 'w+', newline='\n', buffering=1) 
         self._running_task      = board_task.task
