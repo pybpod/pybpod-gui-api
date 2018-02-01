@@ -32,7 +32,6 @@ class SetupBase(object):
         self.name = "Untitled setup {0}".format(len(self.experiment.setups))
         self._sessions = []
         self._subjects = []
-        self.path   = setup_path
         self.board  = None
         self.task   = self.experiment.task
 
@@ -132,11 +131,7 @@ class SetupBase(object):
 
         :rtype: str
         """
-        return self._path
-
-    @path.setter
-    def path(self, value):
-        self._path = value
+        return os.path.join(self.experiment.path, 'setups', self.name)
 
     @property
     def last_session(self):

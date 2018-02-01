@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, uuid
+import logging, uuid, os
 from pybpodgui_api.models.setup import Setup
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,6 @@ class ExperimentBase(object):
         self.name = 'Untitled experiment {0}'.format(len(project.experiments))
         self._setups = []
         self.project = project
-        self.path = None
         self.task = None
 
         self.project += self
@@ -89,11 +88,8 @@ class ExperimentBase(object):
 
         :rtype: str
         """
-        return self._path
+        return os.path.join(self.project.path, 'experiments',self.name)
 
-    @path.setter
-    def path(self, value):
-        self._path = value
 
     ##########################################################################
     ####### FUNCTIONS ########################################################

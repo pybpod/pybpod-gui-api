@@ -114,7 +114,7 @@ conf += RunnerSettings
 
         AsyncBpod.run_protocol(self,
             bpod_settings,
-            board_task.task.path,
+            board_task.task.filepath,
             'username',
             session.setup.experiment.project.name,
             session.setup.experiment.name,

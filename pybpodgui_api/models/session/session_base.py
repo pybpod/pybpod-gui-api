@@ -21,7 +21,6 @@ class SessionBase(object):
         
         self.setup              = setup
         self.name               = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        self.path               = os.path.join(self.setup.path, "{0}.txt".format(self.name))
         self.setup_name         = setup.name
         self.board_name         = setup.board.name if setup.board else None
         self.task_name          = setup.task.name if setup.task else None
@@ -30,6 +29,7 @@ class SessionBase(object):
         self.ended              = None
         self.messages_history   = []
         self.subjects           = []
+        self.filepath           = None
 
 
     def open(self):
@@ -108,12 +108,16 @@ class SessionBase(object):
 
         :rtype: str
         """
-        return self._path
+        return os.path.join(self.setup.path, 'sessions',self.name)
 
-    @path.setter
-    def path(self, value):
-        self._path = value
+    @property
+    def filepath(self):
+        return self._filepath
 
+    @filepath.setter
+    def filepath(self, value):
+        self._filepath = value
+    
     @property
     def setup_name(self):
         """

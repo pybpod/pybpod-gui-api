@@ -1,20 +1,12 @@
 *************************************
-:mod:`experiment`
+:mod:`models.experiment`
 *************************************
-
-.. module:: pybpodgui_api.models.experiment
-   :synopsis: Bpod experiment
-
-.. toctree::
-   :titlesonly:
-
-   setup/setup
 
 --------
 Overview
 --------
 
-Enumerates Bpod board supported operations.
+Enumerates Bpod experiment supported operations.
 
 
 --------------
@@ -22,6 +14,8 @@ Implementation
 --------------
 
 .. autoclass:: pybpodgui_api.models.experiment.Experiment
+    :members:
     :inherited-members:
-	:members:
-	:undoc-members:
+    :exclude-members:
+        collect_data
+    :undoc-members:

@@ -1,21 +1,20 @@
 ************************************
-:mod:`board_task`
+:mod:`models.board.board_task`
 ************************************
-
-.. module:: pybpodgui_api.setup.board_task
-   :synopsis: Bpod board
 
 --------
 Overview
 --------
 
-Enumerates Bpod board supported operations.
+Enumerates Bpod BoardTask supported operations.
 
 --------------
 Implementation
 --------------
 
 .. autoclass:: pybpodgui_api.models.setup.board_task.BoardTask
-	:inherited-members:
-	:members:
-	:exclude-members: collect_data
+    :members:
+    :inherited-members:
+    :exclude-members:
+        collect_data
+    :undoc-members:

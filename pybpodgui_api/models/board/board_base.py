@@ -25,7 +25,6 @@ class BoardBase(object):
         self.serial_port = None
         self.project = project
 
-        self._path = None
         self.log_messages = []
 
         self.project += self
@@ -85,11 +84,9 @@ class BoardBase(object):
 
         :rtype: str
         """
-        return self._path
+        return os.path.join(self.project.path, 'boards',self.name)
 
-    @path.setter
-    def path(self, value):
-        self._path = value
+        
 
     @property
     def enabled_bncports(self):

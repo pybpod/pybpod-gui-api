@@ -6,9 +6,9 @@
 """
 import logging, uuid
 from pybpodgui_api.models.experiment import Experiment
-from pybpodgui_api.models.board         import Board
-from pybpodgui_api.models.task      import Task
-from pybpodgui_api.models.subject   import Subject
+from pybpodgui_api.models.board      import Board
+from pybpodgui_api.models.task       import Task
+from pybpodgui_api.models.subject    import Subject
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,6 @@ class ProjectBase(object):
     def __init__(self):
         self.uuid4      = uuid.uuid4()
         self.name           = ''
-        self.path           = None
         self._experiments   = []
         self._tasks         = []
         self._boards        = []

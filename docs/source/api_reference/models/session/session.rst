@@ -1,5 +1,5 @@
 *******************************
-:mod:`session`
+:mod:`models.session`
 *******************************
 
 
@@ -7,13 +7,15 @@
 Overview
 --------
 
-Enumerates Bpod board supported operations.
+Enumerates Bpod session supported operations.
 
 --------------
 Implementation
 --------------
 
 .. autoclass:: pybpodgui_api.models.session.Session
+    :members:
     :inherited-members:
-	:members:
-	:undoc-members:
+    :exclude-members:
+        collect_data
+    :undoc-members:

@@ -1,10 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import os, datetime, dateutil
-
-
-
+import os, datetime, dateutil, shutil
 
 from pybpodgui_api.models.session.session_base  import SessionBase
 from pybpodgui_api.exceptions.invalid_session   import InvalidSessionError
@@ -38,23 +35,24 @@ class SessionIO(SessionBase):
         :param parent_path:
         :return:
         """
-        filename = os.path.basename(self.path).replace('.csv', '')
-        filepath = os.path.dirname(self.path)
+        repository.add_file( self.filepath , self.name+'.csv')
+        repository['name'] = self.name
+        repository.save()
 
-        if filename != self.name or filepath != repository.path:
-            new_path = os.path.join(repository.path, self.name + '.csv')
-            os.rename(self.path, new_path)
-            self.path = new_path
+        self.name = repository.name
+        self.filepath = os.path.join(self.path, self.name+'.csv')
 
-    def load(self, session_path, data):
+
+    def load(self, repository):
         """
 
         :param session_path:
         :param data:
         :return:
         """
-        self.name = os.path.basename(session_path).replace('.csv', '')
-        self.path = session_path
+        self.name   = repository.name
+        self.uuid4  = repository.uuid4 if repository.uuid4 else self.uuid4
+        self.filepath = os.path.join(self.path, self.name+'.csv')
 
     def load_contents(self, session_path):
         """

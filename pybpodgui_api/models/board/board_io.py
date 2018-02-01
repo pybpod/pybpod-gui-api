@@ -53,7 +53,9 @@ class BoardIO(BoardBase):
 
             repository.add_parent_ref(self.project.uuid4)
             
-            self.path = repository.save()
+            repository.save()
+
+            self.name = repository.name
 
             return repository
 
@@ -70,7 +72,6 @@ class BoardIO(BoardBase):
         self.enabled_bncports       = repository.get('enabled-bncports',      None)
         self.enabled_wiredports     = repository.get('enabled-wiredports',    None)
         self.enabled_behaviorports  = repository.get('enabled-behaviorports', None)
-        self._path                  = repository.path
 
 
     def __generate_boards_path(self, project_path):

@@ -1,20 +1,20 @@
 ***************************************
-:mod:`taskvariable`
+:mod:`models.board.taskvariable`
 ***************************************
-
-.. module:: pybpodgui_api.models.taskvariable
-   :synopsis: Bpod API task
 
 --------
 Overview
 --------
 
-Enumerates Bpod board supported operations.
+Enumerates Bpod task variable supported operations.
 
 --------------
 Implementation
 --------------
 
 .. autoclass:: pybpodgui_api.models.setup.task_variable.TaskVariable
+    :members:
     :inherited-members:
-	:members:
+    :exclude-members:
+        collect_data
+    :undoc-members:

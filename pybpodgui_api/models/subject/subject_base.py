@@ -69,10 +69,8 @@ class SubjectBase(object):
 
         :rtype: str
         """
-        return self._path
+        return os.path.join(self.project.path, 'subjects', self.name)
 
-    @path.setter
-    def path(self, value):      self._path = value
 
     ##########################################################################
     ####### FUNCTIONS ########################################################

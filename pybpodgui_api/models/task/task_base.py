@@ -16,8 +16,9 @@ class TaskBase(object):
         self.uuid4   = uuid.uuid4()
         self.name    = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
         self.project = project
-        self.path    = None
         self.project += self
+
+        self.filepath = None
         
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -42,11 +43,20 @@ class TaskBase(object):
 
         :rtype: str
         """
-        return self._path
+        return os.path.join(self.project.path, 'tasks', self.name)
 
-    @path.setter
-    def path(self, value): 
-        self._path = value
+    @property
+    def filepath(self):
+        """
+        Get and set task file path
+
+        :rtype: str
+        """
+        return self._filepath
+
+    @filepath.setter
+    def filepath(self, value):
+        self._filepath = value
 
     @property
     def code(self):
@@ -55,13 +65,13 @@ class TaskBase(object):
 
         :rtype: str
         """
-        if not self.path or not os.path.exists(self.path):
+        if not self.filepath or not os.path.exists(self.filepath):
             raise FileNotFoundError("Task file not found!")
-        with open(self.path, "r") as file: return file.read()
+        with open(self.filepath, "r") as file: return file.read()
         return None
     @code.setter
     def code(self, value):
-        if not self.path or not os.path.exists(self.path):
+        if not self.filepath or not os.path.exists(self.filepath):
             tasks_path = os.path.join(self.project.path, 'tasks')
             if not os.path.exists(tasks_path): os.makedirs(tasks_path)
 
@@ -73,8 +83,8 @@ class TaskBase(object):
             if not os.path.exists(initfile): 
                 with open(initfile, "w") as file: pass
 
-            self.path = os.path.join(task_folder, self.name)+'.py'
-        with open(self.path, "w") as file: file.write(value)
+            
+        with open(self.filepath, "w") as file: file.write(value)
 
     @property
     def project(self):          

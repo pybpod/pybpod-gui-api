@@ -3,7 +3,7 @@
 
 import logging, os, hashlib
 import pybpodgui_api
-from pybpodgui_api.utils.send2trash_wrapper import send2trash
+
 from pybpodgui_api.models.experiment.experiment_base import ExperimentBase
 
 from sca.formats import json
@@ -41,22 +41,22 @@ class ExperimentIO(ExperimentBase):
         :return: Dictionary containing the experiment info to save.  
         :rtype: dict
         """
+        
         # save setups
         for setup in self.setups:
             setup.save(repository.sub_repository('setups', setup.name, uuid4=setup.uuid4))
-
+        
         repository.uuid4    = self.uuid4
         repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
         repository.def_url  = 'http://pybpod.readthedocs.org'
         repository.def_text = 'This file contains information about a PyBpod gui experiment.'
-        repository['name']  = self.name
         repository['task']  = self.task.name if self.task else None
-
         repository.add_parent_ref(self.project.uuid4)
-        if self.task:
-            repository.add_external_ref(self.task.uuid4)
+        if self.task: repository.add_external_ref(self.task.uuid4)
 
-        self.path = repository.save()
+        repository.save()
+        
+        self.name = repository.name
         return repository
 
 
@@ -71,7 +71,6 @@ class ExperimentIO(ExperimentBase):
         self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
         self.name = repository.name
         self.task = repository.get('task', None)
-        self.path = repository.path
 
         setups_repos = repository.find('setups')
         if setups_repos is not None:

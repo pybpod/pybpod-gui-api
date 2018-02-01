@@ -28,24 +28,32 @@ class TaskIO(TaskBase):
         :return: Dictionary containing the task info to save.  
         :rtype: dict
         """
-        new_task_path = os.path.join(repository.path, self.name) + '.py'
 
-        if self.path != new_task_path:
-            # if the task file is not in the project file, it makes a copy to the project folder
-            code_txt = self.code if self.path else ''
-            self.path = new_task_path
-            self.code = code_txt
-
-        repository.uuid4 = self.uuid4
+        #force the creation of the file
+        if not self.filepath:
+            self.filepath = os.path.join(self.path, self.name+'.py')
+            self.code = ''
+            
+        repository.add_file( self.filepath , self.name+'.py')
+        
+        repository['name'] = self.name
         repository.save()
 
+        self.name = repository.name
 
-    def load(self, task_path, data):
+        if self.filepath:
+            self.filepath = os.path.join(self.path, self.name+'.py')
+        
+
+
+    def load(self, repository):
         """
         Load setup data from filesystem
 
         :ivar str task_path: Path of the task
         :ivar dict data: data object that contains all task info
         """
-        self.name = os.path.splitext(os.path.basename(task_path))[0]
-        self.path = task_path
+        self.name   = repository.name
+        self.uuid4  = repository.uuid4 if repository.uuid4 else self.uuid4
+        self.filepath = os.path.join(self.path, self.name+'.py')
+        

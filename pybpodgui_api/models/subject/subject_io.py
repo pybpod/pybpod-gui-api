@@ -40,7 +40,9 @@ class SubjectIO(SubjectBase):
 
             repository.add_parent_ref(self.project.uuid4)
 
-            self.path = repository.save()
+            repository.save()
+
+            self.name = repository.name
             
             return repository
 
