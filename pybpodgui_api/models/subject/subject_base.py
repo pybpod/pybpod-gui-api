@@ -69,6 +69,7 @@ class SubjectBase(object):
 
         :rtype: str
         """
+        if self.project.path is None: return None
         return os.path.join(self.project.path, 'subjects', self.name)
 
 

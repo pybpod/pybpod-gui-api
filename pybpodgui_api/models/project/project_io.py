@@ -102,8 +102,9 @@ class ProjectIO(ProjectBase):
         logger.debug("current project name: %s", self.name)
         logger.debug("current project path: %s", self.path)
 
-        if not self.path and os.path.exists(project_path):
-            raise FileExistsError("Project folder already exists")
+
+        #if not self.path and os.path.exists(project_path):
+        #    raise FileExistsError("Project folder already exists")
 
         # Check if we are updating a repository previously loaded or creating a new one.
         if self.repository:

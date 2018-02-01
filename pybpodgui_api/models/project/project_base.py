@@ -26,6 +26,7 @@ class ProjectBase(object):
         self._tasks         = []
         self._boards        = []
         self._subjects      = []
+        self._path          = None
 
     ##########################################################################
     ####### PROPERTIES #######################################################

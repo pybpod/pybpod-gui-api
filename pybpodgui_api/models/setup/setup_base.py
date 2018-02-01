@@ -17,6 +17,7 @@ class SetupBase(object):
         :ivar Experiment experiment: Experiment to which the Setup belongs to
         """
         self.uuid4      = uuid.uuid4()
+        self.name = "Untitled setup {0}".format(len(experiment.setups))
         
         self.experiment = experiment
         self.board_task = self.create_board_task()
@@ -29,7 +30,6 @@ class SetupBase(object):
             setup_path = os.path.join(setups_path, self.name)
             if not os.path.exists(setup_path): os.makedirs(setup_path)
 
-        self.name = "Untitled setup {0}".format(len(self.experiment.setups))
         self._sessions = []
         self._subjects = []
         self.board  = None
@@ -131,6 +131,7 @@ class SetupBase(object):
 
         :rtype: str
         """
+        if self.experiment.path is None: return None
         return os.path.join(self.experiment.path, 'setups', self.name)
 
     @property

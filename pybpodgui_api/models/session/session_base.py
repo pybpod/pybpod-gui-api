@@ -108,6 +108,7 @@ class SessionBase(object):
 
         :rtype: str
         """
+        if self.setup.path is None: return None
         return os.path.join(self.setup.path, 'sessions',self.name)
 
     @property
