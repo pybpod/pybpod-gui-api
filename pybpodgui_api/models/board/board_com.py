@@ -7,7 +7,7 @@ import os
 import uuid
 
 from pysettings import conf
-
+from pathlib import Path
 from pybpodgui_plugin.com.async.async_bpod import AsyncBpod
 
 from pybpodgui_api.models.board.board_io import BoardIO
@@ -79,7 +79,11 @@ class BoardCom(AsyncBpod, BoardIO):
         :ivar str workspace_path: Not used. To be removed in the future.  
         """
         
-        self._session_log_file  = open(session.path, 'w+', newline='\n', buffering=1) 
+        logger.debug('creating path', session.path)
+        Path(session.path).mkdir(parents=True, exist_ok=True)
+        logfilename = os.path.join(session.path, session.name+'.txt')
+        logger.debug('creating file', logfilename)
+        self._session_log_file  = open(logfilename, 'w+', newline='\n', buffering=1) 
         self._running_task      = board_task.task
         self._running_session   = session
         session.open()
@@ -120,6 +124,8 @@ conf += RunnerSettings
             session.setup.experiment.name,
             board_task.board.name,
             session.setup.name,
+            session.name,
+            session.path,
             [s.name for s in session.setup.subjects],
             [(v.name, v.value) for v in board_task.variables],
             handler_evt=self.run_task_handler_evt,

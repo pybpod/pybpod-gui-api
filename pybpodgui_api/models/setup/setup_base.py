@@ -22,14 +22,15 @@ class SetupBase(object):
         self.experiment = experiment
         self.board_task = self.create_board_task()
 
+        """
         setup_path = None
         if experiment.path is not None:
             setups_path = os.path.join(experiment.path, 'setups')
-            if not os.path.exists(setups_path): os.makedirs(setups_path)
+            #if not os.path.exists(setups_path): os.makedirs(setups_path)
 
             setup_path = os.path.join(setups_path, self.name)
-            if not os.path.exists(setup_path): os.makedirs(setup_path)
-
+            #if not os.path.exists(setup_path): os.makedirs(setup_path)
+        """
         self._sessions = []
         self._subjects = []
         self.board  = None

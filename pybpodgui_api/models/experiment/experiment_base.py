@@ -17,12 +17,12 @@ class ExperimentBase(object):
         """
         :ivar Project project: project object reference
         """
-        self.uuid4      = uuid.uuid4()
+        self.uuid4   = uuid.uuid4()
         
-        self.name = 'Untitled experiment {0}'.format(len(project.experiments))
+        self.name    = 'Untitled experiment {0}'.format(len(project.experiments))
         self._setups = []
         self.project = project
-        self.task = None
+        self.task    = None
 
         self.project += self
 

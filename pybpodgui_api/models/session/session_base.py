@@ -3,6 +3,7 @@
 
 
 import os, csv, datetime, logging, dateutil, uuid
+from pathlib import Path
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
 from pybpodgui_api.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
@@ -36,7 +37,11 @@ class SessionBase(object):
         """
         Open the csv file to write the session data
         """
-        self.csvfile    = open(self.path, 'w+', newline='\n', buffering=1)
+        logger.debug('creating path', self.path)
+        Path(self.path).mkdir(parents=True, exist_ok=True)
+        self.filepath   = os.path.join(self.path, self.name+'.csv')
+        logger.debug('creating file', self.filepath)
+        self.csvfile    = open(self.filepath, 'w+', newline='\n', buffering=1)
         self.csvwriter  = csv.writer(self.csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
     def close(self):
