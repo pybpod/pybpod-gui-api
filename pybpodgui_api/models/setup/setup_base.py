@@ -18,6 +18,7 @@ class SetupBase(object):
         """
         self.uuid4      = uuid.uuid4()
         self.name = "Untitled setup {0}".format(len(experiment.setups))
+        self.detached = False
         
         self.experiment = experiment
         self.board_task = self.create_board_task()
@@ -115,6 +116,13 @@ class SetupBase(object):
         :rtype: Project
         """
         return self.experiment.project
+
+    @property
+    def detached(self):
+        return self._detached
+    @detached.setter
+    def detached(self, value):
+        self._detached = value
 
     @property
     def sessions(self):

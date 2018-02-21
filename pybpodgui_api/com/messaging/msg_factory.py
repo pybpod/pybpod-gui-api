@@ -22,7 +22,6 @@ from pybpodapi.com.messaging.untagged_message       import UntaggedMessage
 from pybpodapi.com.messaging.session_info           import SessionInfo
 
 
-
 logger = logging.getLogger(__name__)
 
 class BpodMessageParser(MessageParser):
@@ -55,7 +54,7 @@ def parse_board_msg(data):
     :returns: list of board messages
     :rtype: list(BoardMessage)
     """
-
+    
     if not data:
         logger.warning("Parsed message: data is empty")
         return [ErrorMessage(data)]

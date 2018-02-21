@@ -37,10 +37,8 @@ class SessionBase(object):
         """
         Open the csv file to write the session data
         """
-        logger.debug('creating path', self.path)
         Path(self.path).mkdir(parents=True, exist_ok=True)
         self.filepath   = os.path.join(self.path, self.name+'.csv')
-        logger.debug('creating file', self.filepath)
         self.csvfile    = open(self.filepath, 'w+', newline='\n', buffering=1)
         self.csvwriter  = csv.writer(self.csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 

@@ -6,12 +6,12 @@ import logging
 import os
 import uuid
 
-from pysettings import conf
+from pyforms import conf
 from pathlib import Path
 from pybpodgui_plugin.com.async.async_bpod import AsyncBpod
 
+from pybpodgui_api.models.setup import Setup
 from pybpodgui_api.models.board.board_io import BoardIO
-from pybpodgui_api.models.board.board_operations import BoardOperations
 from pybpodgui_api.com.messaging.msg_factory import parse_board_msg
 from pybpodgui_api.models.setup.board_task import BoardTask  # used for type checking
 
@@ -47,6 +47,15 @@ class BoardCom(AsyncBpod, BoardIO):
     def status(self, value):
         self._status = value
 
+        # in case a session is running update the status of this sessions
+        if not hasattr(self, '_running_session'): return
+
+        session = self._running_session
+        if value==self.STATUS_READY:
+            session.status = session.STATUS_READY
+        elif value==self.STATUS_RUNNING_TASK:
+            session.status = session.STATUS_SESSION_RUNNING
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
@@ -60,6 +69,7 @@ class BoardCom(AsyncBpod, BoardIO):
         parsed_messages = parse_board_msg(msg)
         for m in parsed_messages:
             self.log_messages.append(m)
+        pass
 
     def log_session_history(self, msg):
         """
@@ -70,7 +80,7 @@ class BoardCom(AsyncBpod, BoardIO):
         self._running_session.log_msg(msg)
 
     
-    def run_task(self, session, board_task, workspace_path):
+    def run_task(self, session, board_task, workspace_path, detached=False):
         """
         Run a task.
         
@@ -79,27 +89,26 @@ class BoardCom(AsyncBpod, BoardIO):
         :ivar str workspace_path: Not used. To be removed in the future.  
         """
         
-        logger.debug('creating path', session.path)
-        Path(session.path).mkdir(parents=True, exist_ok=True)
-        logfilename = os.path.join(session.path, session.name+'.txt')
-        logger.debug('creating file', logfilename)
-        self._session_log_file  = open(logfilename, 'w+', newline='\n', buffering=1) 
-        self._running_task      = board_task.task
-        self._running_session   = session
-        session.open()
+        self._running_task     = board_task.task
+        self._running_session  = session
+        
+        if detached:
+            Path(session.path).mkdir(parents=True, exist_ok=True) 
+        else:
+            session.open()
 
         board = board_task.board
 
         bpod_settings = """
-from pysettings import conf
+from pyforms import conf
 
 class RunnerSettings:
     SETTINGS_PRIORITY = 0
-    WORKSPACE_PATH  = None
-    PROTOCOL_NAME   = '{protocolname}'
+    WORKSPACE_PATH  =  {workspace_path}
+    PROTOCOL_NAME   = '{session_name}.csv'
     SERIAL_PORT     = '{serialport}'
 
-    PYBPOD_API_PUBLISH_DATA_FUNC = print
+    {publish_func}
 
     {bnp_ports}
     {wired_ports}
@@ -107,57 +116,61 @@ class RunnerSettings:
 
 conf += RunnerSettings
         """.format(
+            workspace_path  = "'{0}'".format(session.path) if detached else None,
             serialport      = board.serial_port,
             bnp_ports       = ('BPOD_BNC_PORTS_ENABLED = {0}'.format(board.enabled_bncports)            if board.enabled_bncports else '') ,
             wired_ports     = ('BPOD_WIRED_PORTS_ENABLED = {0}'.format(board.enabled_wiredports)        if board.enabled_wiredports else '') ,
             behavior_ports  = ('BPOD_BEHAVIOR_PORTS_ENABLED = {0}'.format(board.enabled_behaviorports)  if board.enabled_behaviorports else ''),
-            protocolname    = board_task.task.name
+            session_name    = session.name,
+            publish_func    = 'PYBPOD_API_PUBLISH_DATA_FUNC = print' if not detached else ''
         )
 
         self.status = self.STATUS_RUNNING_TASK
 
         AsyncBpod.run_protocol(self,
-            bpod_settings,
-            board_task.task.filepath,
-            'username',
-            session.setup.experiment.project.name,
-            session.setup.experiment.name,
-            board_task.board.name,
-            session.setup.name,
-            session.name,
-            session.path,
-            [s.name for s in session.setup.subjects],
-            [(v.name, v.value) for v in board_task.variables],
-            handler_evt=self.run_task_handler_evt,
-            extra_args=(BoardOperations.RUN_PROTOCOL,),
-            group=uuid.uuid4()
+            bpod_settings,                              # settings
+            board_task.task.filepath,                   # task file path
+            'username',                                 # user running the task
+            session.setup.experiment.project.name,      # project name
+            session.setup.experiment.name,              # experiment name
+            board_task.board.name,                      # board name
+            session.setup.name,                         # setup name
+            session.name,                               # session name
+            session.path,                               # session path
+            [s.name for s in session.setup.subjects],   # list of subjects
+            [(v.name, v.value) for v in board_task.variables], # list of variables
+            handler_evt=self.run_task_handler_evt,      # events handler: callend whenever there is something in the output queue
+            extra_args=(detached, ),                    # call arguments
+            group=uuid.uuid4()                          # unique identifier of this call
         )
 
 
 
-    def run_task_handler_evt(self, e, result):
-        called_operation = e.extra_args[0]
+    def run_task_handler_evt(self, evt, result):
+        # flag to inform if the task is running detacted from the GUI or not.
+        # in case it is detached no information is logged to the GUI.
+        detached = evt.extra_args[0]
 
         try:
-            if called_operation == BoardOperations.RUN_PROTOCOL:
-                if isinstance(result, Exception):
-                    self.log_msg_error(str(result))
-                    raise Exception("Unable to run protocol. Please check console for more info.")
-                elif result is not None:
+            if isinstance(result, Exception):
+                self.log_msg_error(str(result))
+                raise Exception("Unable to run protocol. Please check console for more info.")
+            elif result is not None:
+                if not detached:
                     self.log_msg(result)
                     self.log_session_history(result)
 
-            if e.last_call:
-                self._running_session.close() 
-                self._running_task = None
+            if evt.last_call:
+                if not detached: 
+                    self._running_session.close()
+                self.status           = self.STATUS_READY
+                self._running_task    = None
                 self._running_session = None
-                self.status = self.STATUS_READY
         except Exception as err:
-            self.log_session_history( StderrMessage(err) )
-            self._running_session.close() 
+            if not detached:
+                self.log_session_history( StderrMessage(err) )
+                self._running_session.close()
 
-            #if self._running_session:
-            #   self._running_session.setup.stop_task()
 
             self._running_task = None
             self._running_session = None

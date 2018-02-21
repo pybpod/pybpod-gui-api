@@ -39,7 +39,7 @@ class SessionIO(SessionBase):
         repository['name'] = self.name
         repository.save()
 
-        self.name = repository.name
+        self.name     = repository.name
         self.filepath = os.path.join(self.path, self.name+'.csv')
 
 

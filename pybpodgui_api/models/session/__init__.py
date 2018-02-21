@@ -1,3 +1,3 @@
-from pybpodgui_api.models.session.session_io import SessionIO
+from pybpodgui_api.models.session.session_com import SessionCom
 
-class Session(SessionIO): pass
+class Session(SessionCom): pass
