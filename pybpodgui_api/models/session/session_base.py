@@ -32,6 +32,8 @@ class SessionBase(object):
         self.subjects           = []
         self.filepath           = None
 
+        
+
 
     def open(self):
         """

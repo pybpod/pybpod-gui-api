@@ -54,17 +54,41 @@ class SessionIO(SessionBase):
         self.uuid4  = repository.uuid4 if repository.uuid4 else self.uuid4
         self.filepath = os.path.join(self.path, self.name+'.csv')
 
-    def load_contents(self, session_path):
+
+
+
+    def load_contents(self, init_func=None, update_func=None, end_func=None):
         """
         Parses session history file, line by line and populates the history message on memory.
-
-        :param str session_path: path to session history file
         """
+        parser   = BpodMessageParser()
 
-        parser = BpodMessageParser()
-        with open(session_path) as csvfile:
+        if init_func: 
+            init_func( os.path.getsize(self.filepath) )
+        if update_func:
+            class CountBytes:
+
+                def __init__(self, fileobj):
+                    self.fileobj = fileobj
+
+                def __iter__(self):
+                    self.bytes_readed = 0
+                    return self
+
+                def __next__(self):
+                    row = next(self.fileobj)
+                    self.bytes_readed += len(row)
+                    return row
+
+        with open(self.filepath) as csvfile:
+            if update_func:
+                csvfile = CountBytes(csvfile)
+            
             csvreader = csv.reader(csvfile)
             for row in csvreader:
+                
+                if update_func: update_func( csvfile.bytes_readed )
+                
                 msg = parser.fromlist(row)
                 if msg:
                     self.messages_history.append(msg)
@@ -93,6 +117,46 @@ class SessionIO(SessionBase):
                             subjects.append( msg.infovalue )
                             self.subjects = subjects
 
+        if end_func: end_func()
 
 
-                    
+
+    def load_info(self):
+
+        parser = BpodMessageParser()
+
+        with open(self.filepath) as csvfile:
+            csvreader = csv.reader(csvfile)
+
+            count = 0
+            for row in csvreader:
+                msg = parser.fromlist(row)
+
+                if msg:
+                    if isinstance(msg, SessionInfo):
+                        if   msg.infoname==Session.INFO_PROTOCOL_NAME:
+                            self.task_name = msg.infovalue
+
+                        elif msg.infoname==Session.INFO_SESSION_STARTED:
+                            self.started = dateutil.parser.parse(msg.infovalue)
+
+                        elif msg.infoname==Session.INFO_SESSION_ENDED:
+                            self.ended = dateutil.parser.parse(msg.infovalue)
+
+                        elif msg.infoname==Session.INFO_SERIAL_PORT:
+                            self.board_serial_port = msg.infovalue
+
+                        elif msg.infoname==BpodRunner.INFO_BOARD_NAME:
+                            self.board_name = msg.infovalue
+
+                        elif msg.infoname==BpodRunner.INFO_SETUP_NAME:
+                            self.setup_name = msg.infovalue
+
+                        elif msg.infoname==BpodRunner.INFO_SUBJECT_NAME:
+                            subjects = self.subjects
+                            subjects.append( msg.infovalue )
+                            self.subjects = subjects
+                    else:
+                        count += 1
+
+                if count>20: break

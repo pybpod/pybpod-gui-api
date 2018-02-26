@@ -21,6 +21,12 @@ class SessionCom(SessionIO):
     STATUS_READY           = 0
     STATUS_SESSION_RUNNING = 1 # The session is running
 
+
+    def __init__(self, setup):
+        super(SessionCom, self).__init__(setup)
+        self.status = self.STATUS_READY
+        
+
     @property
     def status(self):
         """
