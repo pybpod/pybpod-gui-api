@@ -118,6 +118,8 @@ class SessionBase(object):
 
     @property
     def filepath(self):
+        if self._filepath is None:
+            return os.path.join(self.path, self.name+'.csv')
         return self._filepath
 
     @filepath.setter
@@ -232,3 +234,8 @@ class SessionBase(object):
         :rtype: Task
         """
         return self.setup.task
+
+
+    @property
+    def is_running(self):
+        return self.status==self.STATUS_SESSION_RUNNING

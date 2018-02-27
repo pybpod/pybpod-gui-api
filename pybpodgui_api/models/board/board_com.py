@@ -94,6 +94,7 @@ class BoardCom(AsyncBpod, BoardIO):
         
         if detached:
             Path(session.path).mkdir(parents=True, exist_ok=True) 
+     
         else:
             session.open()
 

@@ -49,8 +49,6 @@ class SetupCom(SetupBaseIO):
 	def status(self, value):
 		self._status = value
 
-		print('sssss', value)
-
 	##########################################################################
 	####### FUNCTIONS ########################################################
 	##########################################################################
@@ -74,7 +72,6 @@ class SetupCom(SetupBaseIO):
 			raise RunSetupError("Please assign a board and protocol first")
 
 		try:
-			print('run--------')
 			# update the status of the setup
 			self.status = self.STATUS_RUNNING_TASK
 
