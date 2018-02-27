@@ -8,3 +8,5 @@ docs/app\.log
 *.log
 
 *.pyc
+
+pybpod_gui_api\.egg-info/
