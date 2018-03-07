@@ -57,3 +57,16 @@ class TaskIO(TaskBase):
         self.uuid4  = repository.uuid4 if repository.uuid4 else self.uuid4
         self.filepath = os.path.join(self.path, self.name+'.py')
         
+        for filepath in os.listdir(self.path):
+            full_filepath = os.path.join(self.path,filepath)
+
+            if self.filepath == full_filepath: continue
+
+            settings_file = os.path.join(repository.path, repository.name+'.json')
+            if settings_file == full_filepath: continue
+
+            if os.path.isfile(full_filepath):
+                o = self.create_otherfile()
+                o.filepath = full_filepath
+                self += o
+                

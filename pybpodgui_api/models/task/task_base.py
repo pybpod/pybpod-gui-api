@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging, os, uuid
+from .other_taskfile import OtherTaskFile
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,8 @@ class TaskBase(object):
         self.project += self
 
         self.filepath = None
+
+        self._otherfiles = []
         
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -98,10 +101,39 @@ class TaskBase(object):
     @project.setter
     def project(self, project): self._project = project
 
+    @property
+    def otherfiles(self):          
+        """
+        Get and set project
+
+        :rtype: Project
+        """        
+        return self._otherfiles
+    @otherfiles.setter
+    def otherfiles(self, value): self._otherfiles = value
+
     
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
+
+    def create_otherfile(self):
+        """
+        Add a other file to a task and return it.
+        
+        :rtype: Experiment
+        """
+        return OtherTaskFile(self)
+
+    def __add__(self, obj):     
+        if isinstance(obj, OtherTaskFile): self._otherfiles.append(obj)
+        return self
+
+    def __sub__(self, obj):
+        if isinstance(obj, OtherTaskFile): self._otherfiles.remove(obj)
+        return self
+
+
 
     def remove(self):
         """
