@@ -37,6 +37,13 @@ class TaskIO(TaskBase):
         repository.add_file( self.filepath , self.name+'.py')
         
         repository['name'] = self.name
+
+        
+        repository['other-files'] = {}
+        for otherfile in self.otherfiles:
+            repository['other-files'][otherfile.name] = {}
+            otherfile.save(repository)
+
         repository.save()
 
         self.name = repository.name
@@ -57,6 +64,8 @@ class TaskIO(TaskBase):
         self.uuid4  = repository.uuid4 if repository.uuid4 else self.uuid4
         self.filepath = os.path.join(self.path, self.name+'.py')
         
+        otherfiles_data = repository.get('other-files', {})
+
         for filepath in os.listdir(self.path):
             full_filepath = os.path.join(self.path,filepath)
 
@@ -69,4 +78,5 @@ class TaskIO(TaskBase):
                 o = self.create_otherfile()
                 o.filepath = full_filepath
                 self += o
-                
+
+                o.load(repository)

@@ -1,3 +1,3 @@
-from .other_taskfile import OtherTaskFileBase
+from .other_taskfile_io import OtherTaskFileIO
 
-class OtherTaskFile(OtherTaskFileBase): pass
+class OtherTaskFile(OtherTaskFileIO): pass
