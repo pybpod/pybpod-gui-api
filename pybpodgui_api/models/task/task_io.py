@@ -86,6 +86,5 @@ class TaskIO(TaskBase):
             if os.path.isfile(full_filepath):
                 o = self.create_otherfile()
                 o.filepath = full_filepath
-                self += o
-
+                
                 o.load(repository)

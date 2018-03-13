@@ -98,7 +98,7 @@ class TaskBase(object):
         """
         return OtherTaskFile(self)
 
-    def __add__(self, obj):     
+    def __add__(self, obj):
         if isinstance(obj, OtherTaskFile): self._otherfiles.append(obj)
         return self
 

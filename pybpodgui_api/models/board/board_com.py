@@ -5,6 +5,7 @@ import datetime
 import logging
 import os
 import uuid
+import subprocess
 
 from pyforms import conf
 from pathlib import Path
@@ -94,7 +95,6 @@ class BoardCom(AsyncBpod, BoardIO):
         
         if detached:
             Path(session.path).mkdir(parents=True, exist_ok=True) 
-     
         else:
             session.open()
 
@@ -127,6 +127,24 @@ conf += RunnerSettings
         )
 
         self.status = self.STATUS_RUNNING_TASK
+
+        ## Execute the files before the task starts ###################
+        otherfiles = sorted(board_task.task.otherfiles, key=lambda x: x.name)
+        for ofile in otherfiles:
+            if ofile.execute:
+                if ofile.detached:
+                    subprocess.call(['python', ofile.filepath])
+                else:
+                    global_dict = globals()
+                    global_dict['PYBPOD_PROJECT']      = session.project
+                    global_dict['PYBPOD_EXPERIMENT']   = session.setup.experiment
+                    global_dict['PYBPOD_BOARD']        = session.setup.board
+                    global_dict['PYBPOD_SETUP']        = session.setup
+                    global_dict['PYBPOD_SESSION']      = session
+                    global_dict['PYBPOD_SESSION_PATH'] = session.path
+                    global_dict['PYBPOD_SUBJECTS']     = session.setup.subjects
+                    exec(open(ofile.filepath).read(), global_dict)
+        ###############################################################
 
         AsyncBpod.run_protocol(self,
             bpod_settings,                              # settings
