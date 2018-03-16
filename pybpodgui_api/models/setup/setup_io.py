@@ -50,6 +50,7 @@ class SetupBaseIO(SetupBase):
             repository.def_url      = 'http://pybpod.readthedocs.org'
             repository.def_text     = 'This file contains the configuration of a setup from PyBpod system.'
             repository['board']     = self.board.name if self.board else None
+            repository['task']      = self.task.name if self.task else None
             repository['subjects']  = [subject.name for subject in self.subjects]
             repository['detached']  = self.detached
             repository.update(self.board_task.save()) # collect board_task data
@@ -74,6 +75,10 @@ class SetupBaseIO(SetupBase):
 
         self.uuid4 = repository.uuid4 if repository.uuid4 else self.uuid4
         self.board = repository.get('board', None)
+        self.task  = repository.get('task', None)
+
+        if self.board: repository.add_external_ref(self.board.uuid4)
+        if self.task: repository.add_external_ref(self.task.uuid4)
         
         self.detached = repository.get('detached', False)
         self.board_task.load(repository)

@@ -8,7 +8,7 @@ from pybranch.com.messaging.error   import ErrorMessage
 from pybranch.com.messaging.debug   import DebugMessage
 from pybranch.com.messaging.stderr  import StderrMessage
 from pybranch.com.messaging.stdout  import StdoutMessage
-from pybranch.com.messaging.warning import WarningMessage
+from pybpodapi.com.messaging.warning import WarningMessage
 from pybranch.com.messaging.parser  import MessageParser
 
 from pybpodapi.com.messaging.base_message           import BaseMessage

@@ -16,8 +16,8 @@ class SetupBase(object):
         """
         :ivar Experiment experiment: Experiment to which the Setup belongs to
         """
-        self.uuid4      = uuid.uuid4()
-        self.name = "Untitled setup {0}".format(len(experiment.setups))
+        self.uuid4    = uuid.uuid4()
+        self.name     = "Untitled setup {0}".format(len(experiment.setups))
         self.detached = False
         
         self.experiment = experiment
@@ -35,7 +35,7 @@ class SetupBase(object):
         self._sessions = []
         self._subjects = []
         self.board  = None
-        self.task   = self.experiment.task
+        self.task   = None
 
         self.experiment += self
 
@@ -66,6 +66,9 @@ class SetupBase(object):
         :rtype: list(Subject)
         """
         return self._subjects
+
+    
+    
 
     @property
     def board(self):
@@ -154,6 +157,16 @@ class SetupBase(object):
             order_sessions = sorted(self.sessions, key=lambda session: session.started)  # sort by end_date
             return order_sessions[-1]
         except IndexError as err:
+            return None
+
+    @property
+    def net_port(self):
+        if self.task and self.board:
+            if self.task.trigger_softcodes:
+                return self.board.net_port
+            else:
+                return None
+        else:
             return None
 
     ##########################################################################

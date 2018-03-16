@@ -5,7 +5,7 @@ import datetime
 import logging
 import os
 import uuid
-import subprocess
+import subprocess 
 
 from pyforms import conf
 from pathlib import Path
@@ -95,6 +95,7 @@ class BoardCom(AsyncBpod, BoardIO):
         
         if detached:
             Path(session.path).mkdir(parents=True, exist_ok=True) 
+     
         else:
             session.open()
 
@@ -108,6 +109,7 @@ class RunnerSettings:
     WORKSPACE_PATH  =  {workspace_path}
     PROTOCOL_NAME   = '{session_name}.csv'
     SERIAL_PORT     = '{serialport}'
+    NET_PORT        = {netport}
 
     {publish_func}
 
@@ -123,28 +125,30 @@ conf += RunnerSettings
             wired_ports     = ('BPOD_WIRED_PORTS_ENABLED = {0}'.format(board.enabled_wiredports)        if board.enabled_wiredports else '') ,
             behavior_ports  = ('BPOD_BEHAVIOR_PORTS_ENABLED = {0}'.format(board.enabled_behaviorports)  if board.enabled_behaviorports else ''),
             session_name    = session.name,
-            publish_func    = 'PYBPOD_API_PUBLISH_DATA_FUNC = print' if not detached else ''
+            publish_func    = 'PYBPOD_API_PUBLISH_DATA_FUNC = print' if not detached else '',
+            netport         = board_task.task.net_port
         )
 
         self.status = self.STATUS_RUNNING_TASK
 
-        ## Execute the files before the task starts ###################
-        otherfiles = sorted(board_task.task.otherfiles, key=lambda x: x.name)
-        for ofile in otherfiles:
-            if ofile.execute:
-                if ofile.detached:
-                    subprocess.call(['python', ofile.filepath])
-                else:
-                    global_dict = globals()
-                    global_dict['PYBPOD_PROJECT']      = session.project
-                    global_dict['PYBPOD_EXPERIMENT']   = session.setup.experiment
-                    global_dict['PYBPOD_BOARD']        = session.setup.board
-                    global_dict['PYBPOD_SETUP']        = session.setup
-                    global_dict['PYBPOD_SESSION']      = session
-                    global_dict['PYBPOD_SESSION_PATH'] = session.path
-                    global_dict['PYBPOD_SUBJECTS']     = session.setup.subjects
-                    exec(open(ofile.filepath).read(), global_dict)
-        ###############################################################
+        ## Execute the files before the task starts ################### 
+        otherfiles = sorted(board_task.task.otherfiles, key=lambda x: x.name) 
+        for ofile in otherfiles: 
+            if ofile.execute: 
+                if ofile.detached: 
+                    subprocess.Popen(['python', ofile.filepath]) 
+                else: 
+                    global_dict = globals() 
+                    global_dict['PYBPOD_PROJECT']      = session.project 
+                    global_dict['PYBPOD_EXPERIMENT']   = session.setup.experiment 
+                    global_dict['PYBPOD_BOARD']        = session.setup.board 
+                    global_dict['PYBPOD_NETPORT']      = session.setup.net_port 
+                    global_dict['PYBPOD_SETUP']        = session.setup 
+                    global_dict['PYBPOD_SESSION']      = session 
+                    global_dict['PYBPOD_SESSION_PATH'] = session.path 
+                    global_dict['PYBPOD_SUBJECTS']     = session.setup.subjects 
+                    exec(open(ofile.filepath, 'rb').read(), global_dict) 
+        ############################################################### 
 
         AsyncBpod.run_protocol(self,
             bpod_settings,                              # settings

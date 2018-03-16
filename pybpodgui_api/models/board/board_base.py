@@ -125,6 +125,19 @@ class BoardBase(object):
     @enabled_behaviorports.setter
     def enabled_behaviorports(self, value): self._enabled_behaviorports = value
 
+    @property
+    def net_port(self):
+        """
+        Get and set the experiment name
+
+        :rtype: list(Boolean)
+        """
+        return self._net_port
+
+    @net_port.setter
+    def net_port(self, value): self._net_port = value
+
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################

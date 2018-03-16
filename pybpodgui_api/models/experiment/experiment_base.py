@@ -22,8 +22,7 @@ class ExperimentBase(object):
         self.name    = 'Untitled experiment {0}'.format(len(project.experiments))
         self._setups = []
         self.project = project
-        self.task    = None
-
+       
         self.project += self
 
     ##########################################################################

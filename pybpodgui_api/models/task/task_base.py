@@ -18,7 +18,8 @@ class TaskBase(object):
         self.name    = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
         self.project = project
         self.project += self
-
+        self.trigger_softcodes = False
+        
         self.filepath = None
 
         self._otherfiles = []
@@ -62,7 +63,7 @@ class TaskBase(object):
     def filepath(self, value):
         self._filepath = value
 
-
+    
     @property
     def project(self):          
         """
@@ -85,7 +86,20 @@ class TaskBase(object):
     @otherfiles.setter
     def otherfiles(self, value): self._otherfiles = value
 
-    
+    @property
+    def trigger_softcodes(self):
+        """
+        Get net port
+
+        :rtype: int
+        """
+        return self._trigger_softcodes
+
+    @trigger_softcodes.setter
+    def trigger_softcodes(self, value):
+        self._trigger_softcodes = value
+
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
@@ -98,7 +112,7 @@ class TaskBase(object):
         """
         return OtherTaskFile(self)
 
-    def __add__(self, obj):
+    def __add__(self, obj):     
         if isinstance(obj, OtherTaskFile): self._otherfiles.append(obj)
         return self
 

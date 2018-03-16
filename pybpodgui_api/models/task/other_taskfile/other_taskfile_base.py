@@ -63,31 +63,3 @@ class OtherTaskFileBase(object):
     @detached.setter
     def detached(self, value): self._detached = value
 
-
-    @property
-    def code(self):
-        """
-        Get and set task code
-
-        :rtype: str
-        """
-        if not self.filepath or not os.path.exists(self.filepath):
-            raise FileNotFoundError("Task file not found!")
-        with open(self.filepath, "r") as file: return file.read()
-        return None
-    @code.setter
-    def code(self, value):
-        if not self.filepath or not os.path.exists(self.filepath):
-            tasks_path = os.path.join(self.project.path, 'tasks')
-            if not os.path.exists(tasks_path): os.makedirs(tasks_path)
-
-            task_folder = os.path.join(tasks_path, self.name)
-            if not os.path.exists(task_folder): 
-                os.makedirs(task_folder)
-
-            initfile = os.path.join(task_folder, '__init__.py')
-            if not os.path.exists(initfile): 
-                with open(initfile, "w") as file: pass
-
-            
-        with open(self.filepath, "w") as file: file.write(value)
