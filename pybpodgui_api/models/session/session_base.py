@@ -21,7 +21,7 @@ class SessionBase(object):
         self.uuid4      = uuid.uuid4()
         
         self.setup              = setup
-        self.name               = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        self.name               = self.__default_name(setup)
         self.setup_name         = setup.name
         self.board_name         = setup.board.name if setup.board else None
         self.task_name          = setup.task.name if setup.task else None
@@ -29,11 +29,16 @@ class SessionBase(object):
         self.started            = datetime.datetime.now()
         self.ended              = None
         self.messages_history   = []
-        self.subjects           = []
+        self.subjects           = [s.name for s in setup.subjects]
         self.filepath           = None
 
-        
-
+    def __default_name(self, setup):
+        return '_'.join([
+            setup.experiment.name,
+            '|'.join([s.name for s in setup.subjects]),
+            setup.task.name,
+            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        ])
 
     def open(self):
         """

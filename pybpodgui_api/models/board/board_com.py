@@ -95,9 +95,10 @@ class BoardCom(AsyncBpod, BoardIO):
         
         if detached:
             Path(session.path).mkdir(parents=True, exist_ok=True) 
-     
         else:
             session.open()
+
+        
 
         board = board_task.board
 
@@ -131,23 +132,10 @@ conf += RunnerSettings
 
         self.status = self.STATUS_RUNNING_TASK
 
-        ## Execute the files before the task starts ################### 
-        otherfiles = sorted(board_task.task.otherfiles, key=lambda x: x.name) 
-        for ofile in otherfiles: 
-            if ofile.execute: 
-                if ofile.detached: 
-                    subprocess.Popen(['python', ofile.filepath]) 
-                else: 
-                    global_dict = globals() 
-                    global_dict['PYBPOD_PROJECT']      = session.project 
-                    global_dict['PYBPOD_EXPERIMENT']   = session.setup.experiment 
-                    global_dict['PYBPOD_BOARD']        = session.setup.board 
-                    global_dict['PYBPOD_NETPORT']      = session.setup.net_port 
-                    global_dict['PYBPOD_SETUP']        = session.setup 
-                    global_dict['PYBPOD_SESSION']      = session 
-                    global_dict['PYBPOD_SESSION_PATH'] = session.path 
-                    global_dict['PYBPOD_SUBJECTS']     = session.setup.subjects 
-                    exec(open(ofile.filepath, 'rb').read(), global_dict) 
+        ## Execute the PRE commands ################################### 
+        for cmd in board_task.task.commands:
+            if cmd.when==0:
+                cmd.execute(session=session)
         ############################################################### 
 
         AsyncBpod.run_protocol(self,
@@ -184,11 +172,19 @@ conf += RunnerSettings
                     self.log_session_history(result)
 
             if evt.last_call:
+                ## Execute the POST commands ##################################
+                for cmd in self._running_task.commands:
+                    if cmd.when==1:
+                        cmd.execute(session=self._running_task)
+                ###############################################################
+
                 if not detached: 
                     self._running_session.close()
                 self.status           = self.STATUS_READY
                 self._running_task    = None
                 self._running_session = None
+
+                
         except Exception as err:
             if not detached:
                 self.log_session_history( StderrMessage(err) )

@@ -97,7 +97,7 @@ class BoardTask(object):
         """
         for var_data in data.get('variables', []):
             var = self.create_variable()
-            var.load(var_data)          
+            var.load(var_data)
 
 
     def __unicode__(self):

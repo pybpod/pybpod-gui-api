@@ -45,14 +45,10 @@ class TaskIO(TaskBase):
             
         repository.add_file( self.filepath , self.name+'.py')
         
-        repository['name']     = self.name
+        repository['name']              = self.name
         repository['trigger-softcodes'] = self.trigger_softcodes
+        repository['commands']          = [cmd.save() for cmd in self.commands]
         
-        repository['other-files'] = {}
-        for otherfile in self.otherfiles:
-            repository['other-files'][otherfile.name] = {}
-            otherfile.save(repository)
-
         repository.save()
 
         self.name = repository.name
@@ -69,23 +65,11 @@ class TaskIO(TaskBase):
         :ivar str task_path: Path of the task
         :ivar dict data: data object that contains all task info
         """
-        self.name   = repository.name
-        self.uuid4  = repository.uuid4 if repository.uuid4 else self.uuid4
+        self.name     = repository.name
+        self.uuid4    = repository.uuid4 if repository.uuid4 else self.uuid4
         self.filepath = os.path.join(self.path, self.name+'.py')
         self.trigger_softcodes = repository.get('trigger-softcodes', None)
-        
-        otherfiles_data = repository.get('other-files', {})
-        
-        for filepath in os.listdir(self.path):
-            full_filepath = os.path.join(self.path,filepath)
 
-            if self.filepath == full_filepath: continue
-
-            settings_file = os.path.join(repository.path, repository.name+'.json')
-            if settings_file == full_filepath: continue
-
-            if os.path.isfile(full_filepath):
-                o = self.create_otherfile()
-                o.filepath = full_filepath
-                
-                o.load(repository)
+        for data in repository.get('commands', []):
+            cmd = getattr(self, data['type'])()
+            cmd.load(data)

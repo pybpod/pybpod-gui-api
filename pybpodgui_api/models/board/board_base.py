@@ -24,6 +24,7 @@ class BoardBase(object):
         self.name = 'Untitled box {0}'.format(len(project.boards))
         self.serial_port = None
         self.project = project
+        self.net_port = 36000+len(project.boards)
 
         self.log_messages = []
 

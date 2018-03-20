@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging, os, uuid
-from .other_taskfile import OtherTaskFile
+from .taskcommand import ExecCmd, ScriptCmd
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 
 logger = logging.getLogger(__name__)
@@ -20,10 +20,10 @@ class TaskBase(object):
         self.project += self
         self.trigger_softcodes = False
         
-        self.filepath = None
+        self.filepath  = None
 
-        self._otherfiles = []
-        
+        self._commands = []
+
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
@@ -75,16 +75,6 @@ class TaskBase(object):
     @project.setter
     def project(self, project): self._project = project
 
-    @property
-    def otherfiles(self):          
-        """
-        Get and set project
-
-        :rtype: Project
-        """        
-        return self._otherfiles
-    @otherfiles.setter
-    def otherfiles(self, value): self._otherfiles = value
 
     @property
     def trigger_softcodes(self):
@@ -100,26 +90,38 @@ class TaskBase(object):
         self._trigger_softcodes = value
 
 
+    @property
+    def commands(self):
+        """
+        Get commands
+
+        :rtype: list(TaskCommand)
+        """
+        return self._commands
+
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
-    def create_otherfile(self):
-        """
-        Add a other file to a task and return it.
-        
-        :rtype: Experiment
-        """
-        return OtherTaskFile(self)
+   
+
+    def create_scriptcmd(self):
+        return ScriptCmd(self)
+
+    def create_execcmd(self):
+        return ExecCmd(self)
+
 
     def __add__(self, obj):     
-        if isinstance(obj, OtherTaskFile): self._otherfiles.append(obj)
+        if isinstance(obj, ScriptCmd): self._commands.append(obj)
+        if isinstance(obj, ExecCmd):   self._commands.append(obj)
         return self
 
     def __sub__(self, obj):
-        if isinstance(obj, OtherTaskFile): self._otherfiles.remove(obj)
+        if isinstance(obj, ScriptCmd): self._commands.remove(obj)
+        if isinstance(obj, ExecCmd):   self._commands.remove(obj)
         return self
-
 
 
     def remove(self):
