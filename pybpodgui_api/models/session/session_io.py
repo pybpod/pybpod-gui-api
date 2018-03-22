@@ -5,8 +5,7 @@ import os, datetime, dateutil, shutil
 
 from pybpodgui_api.models.session.session_base  import SessionBase
 from pybpodgui_api.exceptions.invalid_session   import InvalidSessionError
-
-from pybpodgui_api.com.messaging.msg_factory import BpodMessageParser
+from pybpodgui_api.com.messaging.parser         import BpodMessageParser
 
 
 from pybpodapi.session import Session
@@ -61,7 +60,7 @@ class SessionIO(SessionBase):
         """
         Parses session history file, line by line and populates the history message on memory.
         """
-        parser   = BpodMessageParser()
+        
 
         if init_func: 
             init_func( os.path.getsize(self.filepath) )
@@ -89,7 +88,7 @@ class SessionIO(SessionBase):
                 
                 if update_func: update_func( csvfile.bytes_readed )
                 
-                msg = parser.fromlist(row)
+                msg = BpodMessageParser.fromlist(row)
                 if msg:
                     self.messages_history.append(msg)
 
@@ -123,14 +122,12 @@ class SessionIO(SessionBase):
 
     def load_info(self):
 
-        parser = BpodMessageParser()
-
         with open(self.filepath) as csvfile:
             csvreader = csv.reader(csvfile)
 
             count = 0
             for row in csvreader:
-                msg = parser.fromlist(row)
+                msg = BpodMessageParser.fromlist(row)
 
                 if msg:
                     if isinstance(msg, SessionInfo):

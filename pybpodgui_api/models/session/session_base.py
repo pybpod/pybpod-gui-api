@@ -6,7 +6,7 @@ import os, csv, datetime, logging, dateutil, uuid
 from pathlib import Path
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
-from pybpodgui_api.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
+from pybpodgui_api.com.messaging.parser import BpodMessageParser
 
 logger = logging.getLogger(__name__)
 
@@ -40,42 +40,13 @@ class SessionBase(object):
             datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         ])
 
-    def open(self):
-        """
-        Open the csv file to write the session data
-        """
-        Path(self.path).mkdir(parents=True, exist_ok=True)
-        self.filepath   = os.path.join(self.path, self.name+'.csv')
-        self.csvfile    = open(self.filepath, 'w+', newline='\n', buffering=1)
-        self.csvwriter  = csv.writer(self.csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-
-    def close(self):
-        """
-        llose the session csv file
-        """
-        self.csvfile.close()
-
-    def log_msg(self, msg): 
-        """ 
-        Parses board output and creates new session history entry 
-
-        :ivar BaseMessage msg: message to be parsed 
-        """ 
-        parsed_messages = parse_board_msg(msg) 
-
-        for m in parsed_messages: 
-            if isinstance(m, SessionInfo) and m.infoname==Session.INFO_SESSION_ENDED:
-                self.ended = m.infovalue
-
-            self.csvwriter.writerow(m.tolist()) 
-            self.messages_history.append(m) 
-        
-        
-
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
 
+    def __add__(self, value):
+        self._messages_history.append(value)
+        return self
 
     def remove(self):
         """

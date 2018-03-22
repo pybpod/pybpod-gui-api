@@ -21,10 +21,10 @@ class BoardBase(object):
         """
         self.uuid4      = uuid.uuid4()
         
-        self.name = 'Untitled box {0}'.format(len(project.boards))
+        self.name        = 'Untitled box {0}'.format(len(project.boards))
         self.serial_port = None
-        self.project = project
-        self.net_port = 36000+len(project.boards)
+        self.project     = project
+        self.net_port    = 36000+len(project.boards)
 
         self.log_messages = []
 
@@ -33,6 +33,10 @@ class BoardBase(object):
         self.enabled_bncports       = None
         self.enabled_wiredports     = None
         self.enabled_behaviorports  = None
+
+    def __add__(self, value):
+        self.log_messages.append(value)
+        return self
 
     ##########################################################################
     ####### PROPERTIES #######################################################
