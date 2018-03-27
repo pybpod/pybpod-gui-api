@@ -36,6 +36,15 @@ class BoardCom(AsyncBpod, BoardIO):
     STATUS_READY = 0
     STATUS_RUNNING_TASK = 1  # The board is busy running a task
 
+
+    INFO_CREATOR_NAME       = 'CREATOR-NAME'
+    INFO_PROJECT_NAME       = 'PROJECT-NAME'
+    INFO_EXPERIMENT_NAME    = 'EXPERIMENT-NAME'
+    INFO_BOARD_NAME         = 'BOARD-NAME'
+    INFO_SETUP_NAME         = 'SETUP-NAME'
+    INFO_SUBJECT_NAME       = 'SUBJECT-NAME'
+    INFO_BPODGUI_VERSION    = 'BPOD-GUI-VERSION'
+
     def __init__(self, project):
         BoardIO.__init__(self, project)
         AsyncBpod.__init__(self)
@@ -102,8 +111,27 @@ class BoardCom(AsyncBpod, BoardIO):
             behavior_ports  = ('BPOD_BEHAVIOR_PORTS_ENABLED = {0}'.format(board.enabled_behaviorports)  if board.enabled_behaviorports else ''),
             session_name    = session.name,
             publish_func    = 'PYBPOD_API_PUBLISH_DATA_FUNC = print' if not detached else '',
-            netport         = board_task.setup.net_port
+            netport         = board_task.setup.net_port,
+
+            project         = session.project.name,
+            experiment      = session.setup.experiment.name,
+            board           = board_task.board.name,
+            setup           = session.setup.name,
+            session         = session.name,
+            session_path    = session.path,
+            subjects        = ','.join( list(map(lambda x: "'"+x+"'", session.subjects)) )
+        
+
         )
+        """
+        var.session += SessionInfo(self.INFO_CREATOR_NAME,      user_name)  # TODO
+        var.session += SessionInfo(self.INFO_PROJECT_NAME,      project_name)   
+        var.session += SessionInfo(self.INFO_EXPERIMENT_NAME,   experiment_name)
+        var.session += SessionInfo(self.INFO_SETUP_NAME, setup_name)
+        var.session += SessionInfo(var.session.INFO_SESSION_ENDED, datetime_now.now())
+        for subject in subjects: var.session += SessionInfo(self.INFO_SUBJECT_NAME, subject)
+        var.session += SessionInfo(self.INFO_BPODGUI_VERSION, pybpodgui_plugin.__version__)
+        """        
 
         #create the bpod configuration file in the session folder
         settings_path = os.path.join(self._running_session.path,'user_settings.py')
@@ -129,14 +157,7 @@ class BoardCom(AsyncBpod, BoardIO):
         enviroment = os.environ.copy()
         enviroment['PYTHONPATH'] = ":".join([os.path.abspath(self._running_session.path)]+sys.path)
         
-        enviroment['PYBPOD_PROJECT']      = session.project.name
-        enviroment['PYBPOD_EXPERIMENT']   = session.setup.experiment.name
-        enviroment['PYBPOD_BOARD']        = board_task.board.name
-        enviroment['PYBPOD_SETUP']        = session.setup.name
-        enviroment['PYBPOD_SESSION']      = session.name
-        enviroment['PYBPOD_SESSION_PATH'] = session.path
-        enviroment['PYBPOD_SUBJECTS']     = ';'.join(session.subjects)
-
+        
 
         self.proc = subprocess.Popen(
             ['python', os.path.abspath(task.filepath)],
