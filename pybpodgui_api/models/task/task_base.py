@@ -19,8 +19,15 @@ class TaskBase(object):
         self.project = project
         self.project += self
         self.trigger_softcodes = False
+
+        taskspath = os.path.join(project.path,'tasks')
+        if not os.path.exists(taskspath): os.makedirs(taskspath)
+        taskpath = os.path.join(taskspath,self.name)
+        if not os.path.exists(taskpath): os.makedirs(taskpath)
+        taskfilepath = os.path.join(taskpath, self.name+'.py')
+        open(taskfilepath, 'w').close()        
         
-        self.filepath  = None
+        self.filepath  = taskfilepath
 
         self._commands = []
 

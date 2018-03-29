@@ -18,7 +18,7 @@ class SessionBase(object):
 
     def __init__(self, setup):
         setup += self
-        self.uuid4      = uuid.uuid4()
+        self.uuid4 = uuid.uuid4()
         
         self.setup              = setup
         self.name               = self.__default_name(setup)
@@ -31,6 +31,9 @@ class SessionBase(object):
         self.messages_history   = []
         self.subjects           = [s.name for s in setup.subjects]
         self.filepath           = None
+
+
+        
 
     def __default_name(self, setup):
         return '_'.join([
