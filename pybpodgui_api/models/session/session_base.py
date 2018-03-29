@@ -36,7 +36,7 @@ class SessionBase(object):
         return '_'.join([
             setup.experiment.name,
             '|'.join([s.name for s in setup.subjects]),
-            setup.task.name,
+            setup.task.name if setup.task is not None else 'None',
             datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         ])
 
