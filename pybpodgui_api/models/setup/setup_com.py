@@ -52,7 +52,21 @@ class SetupCom(SetupBaseIO):
 	##########################################################################
 	####### FUNCTIONS ########################################################
 	##########################################################################
+	def stop_trial(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.stop_trial()
 
+	def stop_task(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.stop_task()
+
+	def pause_trial(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.pause_trial()
+
+	def resume_trial(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.resume_trial()
 
 	def run_task(self):
 		"""
@@ -89,5 +103,5 @@ class SetupCom(SetupBaseIO):
 			raise Exception("Unknown error found while running task. See log for more details.")
 
 	
-	def stop_task(self):
-		pass
+	
+
