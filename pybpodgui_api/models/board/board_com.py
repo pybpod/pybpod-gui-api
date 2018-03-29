@@ -13,6 +13,7 @@ import pickle
 import base64
 import marshal
 
+from AnyQt.QtCore import QTimer
 from pyforms import conf
 from pathlib import Path
 from pybpodgui_plugin.com.async.async_bpod import AsyncBpod
@@ -80,9 +81,28 @@ class BoardCom(AsyncBpod, BoardIO):
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
+    def pause_trial(self):
+        if hasattr(self, 'proc'):
+            self.proc.stdin.write("pause-trial\r\n".encode())
+            self.proc.stdin.flush()
 
+    def resume_trial(self):
+        if hasattr(self, 'proc'):
+            self.proc.stdin.write("resume-trial\r\n".encode())
+            self.proc.stdin.flush()
 
+    def stop_trial(self):
+        if hasattr(self, 'proc'):
+            self.proc.stdin.write("stop-trial\r\n".encode())
+            self.proc.stdin.flush()
 
+    def stop_task(self):
+        if hasattr(self, 'proc'):
+            self.proc.stdin.write("close\r\n".encode())
+            self.proc.stdin.flush()
+
+    
+            
     
     def run_task(self, session, board_task, workspace_path, detached=False):
         """
@@ -120,8 +140,6 @@ class BoardCom(AsyncBpod, BoardIO):
             session         = session.name,
             session_path    = session.path,
             subjects        = ','.join( list(map(lambda x: "'"+x+"'", session.subjects)) )
-        
-
         )
         """
         var.session += SessionInfo(self.INFO_CREATOR_NAME,      user_name)  # TODO
@@ -189,7 +207,8 @@ class BoardCom(AsyncBpod, BoardIO):
         
     def run_task_handler(self, flag=True):
         if flag and self.proc.poll() is not None: self.end_run_task_handler()
-      
+        
+        
         for row in self.csvreader:
             msg = BpodMessageParser.fromlist(row)
             self._running_session += msg
@@ -200,4 +219,5 @@ class BoardCom(AsyncBpod, BoardIO):
         self.status = self.STATUS_RUNNING_TASK
 
     def end_run_task_handler(self):
+        del self.proc
         self.status = self.STATUS_READY
