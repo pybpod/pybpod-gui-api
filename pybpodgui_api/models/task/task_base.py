@@ -14,21 +14,14 @@ class TaskBase(object):
         """
         :ivar Project project: Project to which the Task belongs to.
         """
-        self.uuid4   = uuid.uuid4()
-        self.name    = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
-        self.project = project
-        self.project += self
         self.trigger_softcodes = False
 
-        taskspath = os.path.join(project.path,'tasks')
-        if not os.path.exists(taskspath): os.makedirs(taskspath)
-        taskpath = os.path.join(taskspath,self.name)
-        if not os.path.exists(taskpath): os.makedirs(taskpath)
-        taskfilepath = os.path.join(taskpath, self.name+'.py')
-        open(taskfilepath, 'w').close()        
+        self.uuid4    = uuid.uuid4()
+        self.filepath = None
+        self.project  = project
+        self.name     = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
+        self.project += self
         
-        self.filepath  = taskfilepath
-
         self._commands = []
 
     ##########################################################################
@@ -45,7 +38,22 @@ class TaskBase(object):
         return self._name
        
     @name.setter
-    def name(self, value): self._name = value
+    def name(self, value):
+        previous_name = self._name if hasattr(self, '_name') else None
+        previous_path = self.path if hasattr(self, '_name')  else None
+   
+        self._name    = value
+        if previous_path is not None and self.filepath is not None:
+            filepath = os.path.join(previous_path, self.name+'.py')
+            os.rename(self.filepath, filepath )
+
+            oldfilepath = os.path.join(previous_path, previous_name+'.json')
+            filepath    = os.path.join(previous_path, self.name+'.json')
+            if os.path.isfile(oldfilepath): os.rename(oldfilepath, filepath)
+
+            os.rename(previous_path, self.path)
+            self.filepath = os.path.join(self.path, self.name+'.py')
+
 
     @property
     def path(self): 
@@ -111,14 +119,31 @@ class TaskBase(object):
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
-   
+    def make_path(self):
+        """
+        Creates the task folder
+        """
+        tasks_path = os.path.join(self.project.path, 'tasks')
+        if not os.path.exists(tasks_path): os.makedirs(tasks_path)
+        if not os.path.exists(self.path):  os.makedirs(self.path)
+        open(os.path.join(self.path, '__init__.py'), 'w').close()
+
+    def make_emptyfile(self):
+        """
+        Creates the task folder if does not exists and an empty code file
+        """
+        self.make_path()
+        filepath = os.path.join(self.path, self.name+'.py')
+        open(filepath, 'w').close()
+        return filepath
+        
+
 
     def create_scriptcmd(self):
         return ScriptCmd(self)
 
     def create_execcmd(self):
         return ExecCmd(self)
-
 
     def __add__(self, obj):     
         if isinstance(obj, ScriptCmd): self._commands.append(obj)
@@ -129,7 +154,6 @@ class TaskBase(object):
         if isinstance(obj, ScriptCmd): self._commands.remove(obj)
         if isinstance(obj, ExecCmd):   self._commands.remove(obj)
         return self
-
 
     def remove(self):
         """

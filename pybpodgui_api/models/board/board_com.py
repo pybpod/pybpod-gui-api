@@ -131,7 +131,7 @@ class BoardCom(AsyncBpod, BoardIO):
             behavior_ports  = ('BPOD_BEHAVIOR_PORTS_ENABLED = {0}'.format(board.enabled_behaviorports)  if board.enabled_behaviorports else ''),
             session_name    = session.name,
             publish_func    = 'PYBPOD_API_PUBLISH_DATA_FUNC = print' if not detached else '',
-            netport         = board_task.setup.net_port,
+            netport         = board_task.board.net_port,
 
             project         = session.project.name,
             experiment      = session.setup.experiment.name,
@@ -220,4 +220,13 @@ class BoardCom(AsyncBpod, BoardIO):
 
     def end_run_task_handler(self):
         del self.proc
+
+
+        ## Execute the POST commands ################################## 
+        #for cmd in self._running_task.commands:
+        #    if cmd.when==1:
+        #        cmd.execute(session=self._running_session)
+        ############################################################### 
+
         self.status = self.STATUS_READY
+

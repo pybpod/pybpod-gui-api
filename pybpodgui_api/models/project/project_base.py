@@ -4,7 +4,7 @@
 """ pycontrol.api.models.project
 
 """
-import logging, uuid
+import logging, uuid, os, shutil
 from pybpodgui_api.models.experiment import Experiment
 from pybpodgui_api.models.board      import Board
 from pybpodgui_api.models.task       import Task
@@ -97,6 +97,29 @@ class ProjectBase(object):
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
+
+    def import_task(self, filepath):
+        if self.path==None:
+            raise Exception('The project has to be saved first')
+
+        filename, file_extension = os.path.splitext(os.path.basename(filepath))
+        
+        # check if there are any existing task with the same name
+        if self.find_task(filename) is not None:
+            raise Exception(
+                """There is already a task named [{}].The import was aborted""".format(filename),
+            )
+        ###########################################################
+
+        # create the task, folder, and copy the files
+        task      = self.create_task()
+        task.name = filename
+        task.make_path()
+        new_filepath  = os.path.join(task.path, task.name+'.py')
+        task.filepath = new_filepath
+        shutil.copy(filepath, new_filepath)
+        ###########################################################
+
 
     def __add__(self, obj):     
         if isinstance(obj, Experiment): self._experiments.append(obj)

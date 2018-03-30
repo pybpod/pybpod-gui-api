@@ -61,7 +61,13 @@ class ExecCmd(TaskCommand):
         self.cmd = ''
 
     def execute(self, **kwargs):
-        subprocess.Popen(self.cmd.split(' '), cwd=self.task.path)
+        subprocess.Popen(
+            self.cmd.split(' '),
+            cwd=self.task.path,
+            stdin=subprocess.PIPE, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE
+        )
 
     def __str__(self): 
         return self.cmd
