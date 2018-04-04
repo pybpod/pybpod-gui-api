@@ -6,12 +6,13 @@ import logging
 import os
 import uuid
 import subprocess
-import fcntl
+#import fcntl
 import os, io
 import sys
 import pickle
 import base64
 import marshal
+import pandas as pd
 
 from AnyQt.QtCore import QTimer
 from pyforms import conf
@@ -28,6 +29,8 @@ from pybpodapi.com.messaging.stdout import StdoutMessage
 from pybpodapi.com.messaging.stderr import StderrMessage
 
 from sca.formats import csv
+
+from .non_blockingcsvreader import NonBlockingCSVReader
 
 logger = logging.getLogger(__name__)
 
@@ -116,13 +119,13 @@ class BoardCom(AsyncBpod, BoardIO):
         self._running_task     = board_task.task
         self._running_session  = session
         
-        board    = board_task.board
+        board = board_task.board
 
         # create the session path
         Path(session.path).mkdir(parents=True, exist_ok=True) 
         
         # load bpod configuration template
-        template = os.path.join(os.path.dirname(__file__), 'run_settings_template.py')
+        template      = os.path.join(os.path.dirname(__file__), 'run_settings_template.py')
         bpod_settings = open(template, 'r').read().format(
             workspace_path  = "'{0}'".format(os.path.abspath(session.path) ),
             serialport      = board.serial_port,
@@ -160,7 +163,6 @@ class BoardCom(AsyncBpod, BoardIO):
         with open(init_path, 'w' ) as out: pass
 
 
-        
         ## Execute the PRE commands ################################### 
         for cmd in board_task.task.commands:
             if cmd.when==0:
@@ -175,7 +177,7 @@ class BoardCom(AsyncBpod, BoardIO):
         enviroment = os.environ.copy()
         enviroment['PYTHONPATH'] = ":".join([os.path.abspath(self._running_session.path)]+sys.path)
         
-        
+        session.data = pd.DataFrame(columns=['TYPE','PC-TIME','BPOD-INITIAL-TIME','BPOD-FINAL-TIME','MSG','+INFO'])
 
         self.proc = subprocess.Popen(
             ['python', os.path.abspath(task.filepath)],
@@ -186,6 +188,7 @@ class BoardCom(AsyncBpod, BoardIO):
             env=enviroment
         )
 
+        """
         # make stdin a non-blocking file
         fd = self.proc.stdin.fileno()
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
@@ -200,19 +203,27 @@ class BoardCom(AsyncBpod, BoardIO):
         fd = self.proc.stderr.fileno()
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-        self.csvreader = csv.reader(
-            io.TextIOWrapper(self.proc.stdout, encoding='utf-8')
+        """
+        
+        
+        self.csvreader = NonBlockingCSVReader( 
+            csv.reader( io.TextIOWrapper(self.proc.stdout, encoding='utf-8') )
         )
         
     def run_task_handler(self, flag=True):
         if flag and self.proc.poll() is not None: self.end_run_task_handler()
         
-        
-        for row in self.csvreader:
-            msg = BpodMessageParser.fromlist(row)
-            self._running_session += msg
-            self += msg
+        row = self.csvreader.readline()
+        while row is not None:
+            if row is None: break
+            self._running_session.data.loc[len(self._running_session.data)] = row
+            row = self.csvreader.readline()
+
+            
+            #self._running_session.data.loc[len(self._running_session.data)] = row
+            #msg = BpodMessageParser.fromlist(row)
+            #self._running_session += msg
+            #self += msg
         
 
     def start_run_task_handler(self):

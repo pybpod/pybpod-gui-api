@@ -12,8 +12,8 @@ from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
 from pybpodgui_plugin.com.run_handlers.bpod_runner import BpodRunner
 
-from sca.formats import csv 
-
+from sca.formats import csv
+import pandas as pd
 
 class SessionIO(SessionBase):
     """
@@ -34,7 +34,7 @@ class SessionIO(SessionBase):
         :param parent_path:
         :return:
         """
-        repository.add_file( self.filepath , self.name+'.csv')
+        repository.uuid4   = self.uuid4
         repository['name'] = self.name
         repository.save()
 
@@ -60,70 +60,20 @@ class SessionIO(SessionBase):
         """
         Parses session history file, line by line and populates the history message on memory.
         """
-        
+        nrows = csv.reader.count_metadata_rows(self.filepath)
 
-        if init_func: 
-            init_func( os.path.getsize(self.filepath) )
-        if update_func:
-            class CountBytes:
-
-                def __init__(self, fileobj):
-                    self.fileobj = fileobj
-
-                def __iter__(self):
-                    self.bytes_readed = 0
-                    return self
-
-                def __next__(self):
-                    row = next(self.fileobj)
-                    self.bytes_readed += len(row)
-                    return row
-
-        with open(self.filepath) as csvfile:
-            if update_func:
-                csvfile = CountBytes(csvfile)
-            
-            csvreader = csv.reader(csvfile)
-            for row in csvreader:
-                
-                if update_func: update_func( csvfile.bytes_readed )
-                
-                msg = BpodMessageParser.fromlist(row)
-                if msg:
-                    self.messages_history.append(msg)
-
-                    if isinstance(msg, SessionInfo):
-                        if   msg.infoname==Session.INFO_PROTOCOL_NAME:
-                            self.task_name = msg.infovalue
-
-                        elif msg.infoname==Session.INFO_SESSION_STARTED:
-                            self.started = dateutil.parser.parse(msg.infovalue)
-
-                        elif msg.infoname==Session.INFO_SESSION_ENDED:
-                            self.ended = dateutil.parser.parse(msg.infovalue)
-
-                        elif msg.infoname==Session.INFO_SERIAL_PORT:
-                            self.board_serial_port = msg.infovalue
-
-                        elif msg.infoname==BpodRunner.INFO_BOARD_NAME:
-                            self.board_name = msg.infovalue
-
-                        elif msg.infoname==BpodRunner.INFO_SETUP_NAME:
-                            self.setup_name = msg.infovalue
-
-                        elif msg.infoname==BpodRunner.INFO_SUBJECT_NAME:
-                            subjects = self.subjects
-                            subjects.append( msg.infovalue )
-                            self.subjects = subjects
-
-        if end_func: end_func()
-
-
+        with open(self.filepath) as filestream:
+            self.data = pd.read_csv(filestream, 
+                delimiter=csv.CSV_DELIMITER, 
+                quotechar=csv.CSV_QUOTECHAR, 
+                quoting=csv.CSV_QUOTING, 
+                skiprows=nrows
+            )
 
     def load_info(self):
 
-        with open(self.filepath) as csvfile:
-            csvreader = csv.reader(csvfile)
+        with open(self.filepath) as filestream:
+            csvreader = csv.reader(filestream)
 
             count = 0
             for row in csvreader:

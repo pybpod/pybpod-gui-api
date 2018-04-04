@@ -48,10 +48,8 @@ class ExperimentIO(ExperimentBase):
         repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
         repository.def_url  = 'http://pybpod.readthedocs.org'
         repository.def_text = 'This file contains information about a PyBpod gui experiment.'
-        #repository['task']  = self.task.name if self.task else None
         repository.add_parent_ref(self.project.uuid4)
-        #if self.task: repository.add_external_ref(self.task.uuid4)
-
+        
         repository.save()
         
         self.name = repository.name
@@ -68,8 +66,7 @@ class ExperimentIO(ExperimentBase):
         """       
         self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
         self.name = repository.name
-        #self.task = repository.get('task', None)
-
+        
         setups_repos = repository.find('setups')
         if setups_repos is not None:
             for repo in setups_repos.list():

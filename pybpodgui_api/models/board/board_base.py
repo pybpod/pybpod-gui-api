@@ -26,6 +26,7 @@ class BoardBase(object):
         self.project     = project
         self.net_port    = 36000+len(project.boards)
 
+        self.data         = None
         self.log_messages = []
 
         self.project += self
