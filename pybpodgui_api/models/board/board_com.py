@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import datetime
+import datetime, dateutil
 import logging
 import os
 import uuid
@@ -19,6 +19,7 @@ from pyforms import conf
 from pathlib import Path
 from pybpodgui_plugin.com.async.async_bpod import AsyncBpod
 
+from pybpodapi.session import Session
 from pybpodgui_api.models.setup import Setup
 from pybpodgui_api.models.board.board_io import BoardIO
 from pybpodgui_api.models.setup.board_task import BoardTask  # used for type checking
@@ -211,7 +212,7 @@ class BoardCom(AsyncBpod, BoardIO):
         )
         
     def run_task_handler(self, flag=True):
-        if flag and self.proc.poll() is not None: self.end_run_task_handler()
+        
         
         row = self.csvreader.readline()
         while row is not None:
@@ -225,6 +226,7 @@ class BoardCom(AsyncBpod, BoardIO):
             #self._running_session += msg
             #self += msg
         
+        if flag and self.proc.poll() is not None: self.end_run_task_handler()
 
     def start_run_task_handler(self):
         self.status = self.STATUS_RUNNING_TASK
@@ -238,6 +240,9 @@ class BoardCom(AsyncBpod, BoardIO):
         #    if cmd.when==1:
         #        cmd.execute(session=self._running_session)
         ############################################################### 
+        res = self._running_session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
+        for index, row in res.iterrows():
+            self._running_session.ended = dateutil.parser.parse(row['+INFO'])
 
         self.status = self.STATUS_READY
 

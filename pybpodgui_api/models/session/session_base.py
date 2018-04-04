@@ -16,12 +16,16 @@ class SessionBase(object):
     Represents a board running session
     """
 
+    
+
     def __init__(self, setup):
         setup += self
         self.uuid4 = uuid.uuid4()
         
+        self.data               = None
         self.setup              = setup
         self.name               = self.__default_name(setup)
+        self.creator            = ''
         self.setup_name         = setup.name
         self.board_name         = setup.board.name if setup.board else None
         self.task_name          = setup.task.name if setup.task else None
