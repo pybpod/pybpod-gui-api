@@ -14,6 +14,11 @@ class TaskVariable(object):
 
         board_task += self
 
+    def __str__(self):
+        return "{name} = {value}".format(
+            name=self.name,
+            value=("'"+self.value+"'") if self.datatype=='string' else self.value
+        )
     
     @property
     def name(self):

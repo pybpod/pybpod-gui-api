@@ -145,6 +145,9 @@ class BoardCom(AsyncBpod, BoardIO):
             session_path    = session.path,
             subjects        = ','.join( list(map(lambda x: "'"+x+"'", session.subjects)) )
         )
+
+        for var in board_task.variables:
+            bpod_settings += "\n"+str(var)
         """
         var.session += SessionInfo(self.INFO_CREATOR_NAME,      user_name)  # TODO
         var.session += SessionInfo(self.INFO_PROJECT_NAME,      project_name)   
