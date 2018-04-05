@@ -120,6 +120,8 @@ class ProjectBase(object):
         shutil.copy(filepath, new_filepath)
         ###########################################################
 
+        return task
+
 
     def __add__(self, obj):     
         if isinstance(obj, Experiment): self._experiments.append(obj)
