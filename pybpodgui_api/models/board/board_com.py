@@ -29,7 +29,8 @@ from pybpodgui_api.com.messaging.parser         import BpodMessageParser
 from pybpodapi.com.messaging.stdout import StdoutMessage
 from pybpodapi.com.messaging.stderr import StderrMessage
 
-from sca.formats import csv
+from sca.formats.csv import CSV_DELIMITER, CSV_QUOTECHAR, CSV_QUOTING
+import csv
 
 from .non_blockingcsvreader import NonBlockingCSVReader
 
@@ -49,6 +50,7 @@ class BoardCom(AsyncBpod, BoardIO):
     INFO_SETUP_NAME         = 'SETUP-NAME'
     INFO_SUBJECT_NAME       = 'SUBJECT-NAME'
     INFO_BPODGUI_VERSION    = 'BPOD-GUI-VERSION'
+
 
     def __init__(self, project):
         BoardIO.__init__(self, project)
@@ -106,7 +108,8 @@ class BoardCom(AsyncBpod, BoardIO):
             self.proc.stdin.flush()
 
     
-            
+    def log2board(self, data):
+        pass  
     
     def run_task(self, session, board_task, workspace_path, detached=False):
         """
@@ -209,9 +212,9 @@ class BoardCom(AsyncBpod, BoardIO):
         fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
         """
         
-        
+
         self.csvreader = NonBlockingCSVReader( 
-            csv.reader( io.TextIOWrapper(self.proc.stdout, encoding='utf-8') )
+            csv.reader( io.TextIOWrapper(self.proc.stdout, encoding='utf-8'), delimiter=CSV_DELIMITER, quotechar=CSV_QUOTECHAR, quoting=CSV_QUOTING )
         )
         
     def run_task_handler(self, flag=True):
@@ -220,7 +223,11 @@ class BoardCom(AsyncBpod, BoardIO):
         row = self.csvreader.readline()
         while row is not None:
             if row is None: break
-            self._running_session.data.loc[len(self._running_session.data)] = row
+            if len(row)==6:
+                self._running_session.data.loc[len(self._running_session.data)] = row
+
+            self.log2board(str(row))
+
             row = self.csvreader.readline()
 
             
