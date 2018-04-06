@@ -21,7 +21,7 @@ class ProjectIO(ProjectBase):
     def __init__(self):
         super(ProjectIO, self).__init__()
 
-        self.repository = None
+        self.repository = None # repository which will manage project files 
         self.data_hash  = None
 
     ##########################################################################
@@ -34,19 +34,19 @@ class ProjectIO(ProjectBase):
 
         :ivar str project_path: Full path of the project to load.
         """
-        self.repository = repository = Repository(project_path).open()
+        self.repository = Repository(project_path).open()
 
-        print()
-        repository.pprint()
-        print()
+        #print()
+        #self.repository.pprint()
+        #print()
 
-        self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name = repository['name']
-        self.path = repository.path
+        self.uuid4= self.repository.uuid4 if self.repository.uuid4 else self.uuid4
+        self.name = self.repository.name
+        self.path = self.repository.path
         
         logger.debug("==== LOAD TASKS ====")
 
-        tasks_repo = repository.find('tasks')
+        tasks_repo = self.repository.find('tasks')
         if tasks_repo is not None:
             for repo in tasks_repo.list():
                 task = self.create_task()
@@ -55,7 +55,7 @@ class ProjectIO(ProjectBase):
         logger.debug("==== LOAD BOARDS ====")
 
         # load boards
-        boards_repo = repository.find('boards')
+        boards_repo = self.repository.find('boards')
         if boards_repo is not None:
             for repo in boards_repo.list():
                 board = self.create_board()
@@ -64,7 +64,7 @@ class ProjectIO(ProjectBase):
         logger.debug("==== LOAD SUBJECTS ====")
 
         # load subjects
-        subjects_repo = repository.find('subjects')
+        subjects_repo = self.repository.find('subjects')
         if subjects_repo is not None:
             for repo in subjects_repo.list():
                 subject = self.create_subject()
@@ -73,7 +73,7 @@ class ProjectIO(ProjectBase):
         logger.debug("==== LOAD EXPERIMENTS ====")
 
         # load experiments
-        experiments_repo = repository.find('experiments')
+        experiments_repo = self.repository.find('experiments')
         if experiments_repo is not None:
             for repo in experiments_repo.list():
                 experiment = self.create_experiment()
@@ -84,12 +84,6 @@ class ProjectIO(ProjectBase):
         
         self.data_hash = self.__generate_project_hash()
         
-
-
-
-
-
-
 
 
     def save(self, project_path):
@@ -122,26 +116,17 @@ class ProjectIO(ProjectBase):
 
         self.path = repository.path
 
-        repository.init_save_session()
-
         ########### SAVE THE TASKS ###########
-        for task in self.tasks:
-            task_repo = repository.sub_repository('tasks', task.name, uuid4=task.uuid4)
-            task.save(task_repo)
+        for task in self.tasks:   task.save(repository)
 
         ########### SAVE THE BOARDS ###########
-        for board in self.boards:
-            board.save( 
-                repository.sub_repository('boards', board.name, uuid4=board.uuid4)
-            )
+        for board in self.boards: board.save(repository)
 
         ########### SAVE THE EXPERIMENTS ############
-        for experiment in self.experiments:
-            experiment.save(repository.sub_repository('experiments', experiment.name, uuid4=experiment.uuid4))
+        for experiment in self.experiments: experiment.save(repository)
 
         ########### SAVE THE SUBJECTS ###############
-        for subject in self.subjects:
-            subject.save(repository.sub_repository('subjects', subject.name, uuid4=subject.uuid4))
+        for subject in self.subjects: subject.save(repository)
 
         ########### SAVE THE PROJECT ############
 
@@ -150,12 +135,28 @@ class ProjectIO(ProjectBase):
         repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
         repository.def_url  = 'http://pybpod.readthedocs.org'
         repository.def_text = 'This file contains information about a PyBpod project.'
-        repository['name']  = self.name
-        repository.save()   # mark the repository to be saved
-        
-        repository.close_save_session()
+        repository.name     = self.name
 
-        repository.pprint()
+        repository.commit()
+        
+
+        """
+        tasks_repo = self.repository.find('tasks')
+        print('tasks', [c.name for c in tasks_repo.children])
+        boards_repo = self.repository.find('boards')
+        print('boards', [c.name for c in boards_repo.children])
+        subjects_repo = self.repository.find('subjects')
+        print('subjects', [c.name for c in subjects_repo.children])
+        experiments_repo = self.repository.find('experiments')
+        print('experiments', [c.name for c in experiments_repo.children])
+        
+        for arep in repository.find('experiments').list():
+            for brep in arep.find('setups').list():
+                crep = brep.find('sessions')
+                print('session','|', brep.name,'|', crep.name,'|', [c.name for c in crep.children])
+        #repository.close_save_session()
+        """
+        #repository.pprint()
 
         self.data_hash = self.__generate_project_hash()
 

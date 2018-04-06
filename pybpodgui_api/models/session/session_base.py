@@ -16,12 +16,10 @@ class SessionBase(object):
     Represents a board running session
     """
 
-    
-
     def __init__(self, setup):
         setup += self
-        self.uuid4 = uuid.uuid4()
-        
+        self.uuid4              = None # the session will only gain a uuid4 after the session is executed
+
         self.data               = None
         self.setup              = setup
         self.name               = self.__default_name(setup)
@@ -33,11 +31,10 @@ class SessionBase(object):
         self.started            = datetime.datetime.now()
         self.ended              = None
         self.messages_history   = []
-        self.subjects           = [s.name for s in setup.subjects]
+        self.subjects           = [ str([s.name, str(s.uuid4)]) for s in setup.subjects]
         self.filepath           = None
 
-
-        
+                
 
     def __default_name(self, setup):
         return '_'.join([
@@ -90,6 +87,19 @@ class SessionBase(object):
         self._name = value
 
     @property
+    def subjects(self):
+        """
+        Get and set session name
+
+        :rtype: str
+        """
+        return self._name
+
+    @subjects.setter
+    def subjects(self, value):
+        self._subjects = value
+
+    @property
     def path(self):
         """
         Get and set path name
@@ -101,8 +111,6 @@ class SessionBase(object):
 
     @property
     def filepath(self):
-        if self._filepath is None:
-            return os.path.join(self.path, self.name+'.csv')
         return self._filepath
 
     @filepath.setter

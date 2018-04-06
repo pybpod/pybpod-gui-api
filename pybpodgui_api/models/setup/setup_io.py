@@ -18,6 +18,10 @@ class SetupBaseIO(SetupBase):
     def __init__(self, experiment):
         super(SetupBaseIO, self).__init__(experiment)
 
+        # repository that will manage the project files
+        self.repository = None
+
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
@@ -29,7 +33,7 @@ class SetupBaseIO(SetupBase):
         return data
 
 
-    def save(self, repository):
+    def save(self, parent_repository):
         """
         Save setup data on filesystem.
 
@@ -40,28 +44,30 @@ class SetupBaseIO(SetupBase):
         if not self.name:
             logger.warning("Skipping setup without name")
         else:
+            # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
+            repository = self.repository = self.repository if self.repository else parent_repository.sub_repository('setups', self.name, uuid4=self.uuid4)
+            ################################################################################################################################
+
             # save sessions
-            for session in self.sessions: 
-                session_repo = repository.sub_repository('sessions',session.name, uuid4=session.uuid4)
-                session.save(session_repo)
+            for session in self.sessions: session.save(repository)
 
             repository.uuid4        = self.uuid4
             repository.software     = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
             repository.def_url      = 'http://pybpod.readthedocs.org'
             repository.def_text     = 'This file contains the configuration of a setup from PyBpod system.'
+            repository.name         = self.name
+            
             repository['board']     = self.board.name if self.board else None
             repository['task']      = self.task.name if self.task else None
             repository['subjects']  = [subject.name for subject in self.subjects]
             repository['detached']  = self.detached
             repository.update(self.board_task.save()) # collect board_task data
-            repository.add_parent_ref(self.experiment.uuid4)
-            if self.board:                  repository.add_external_ref(self.board.uuid4)
-            for subject in self.subjects:   repository.add_external_ref(subject.uuid4)
             
-            repository.save()
+            if self.board:                repository.add_external_ref(self.board.uuid4)
+            for subject in self.subjects: repository.add_external_ref(subject.uuid4)
 
-            self.name = repository.name
-
+            repository.commit()
+            
             return repository
 
     def load(self, repository):
@@ -71,6 +77,8 @@ class SetupBaseIO(SetupBase):
         :ivar str setup_path: Path of the setup
         :ivar dict data: data object that contains all setup info
         """
+        self.repository = repository
+
         self.name = repository.name
 
         self.uuid4 = repository.uuid4 if repository.uuid4 else self.uuid4

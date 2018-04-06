@@ -126,8 +126,8 @@ class BoardCom(AsyncBpod, BoardIO):
         board = board_task.board
 
         # create the session path
-        Path(session.path).mkdir(parents=True, exist_ok=True) 
-        
+        Path(session.path).mkdir(parents=True, exist_ok=True)
+
         # load bpod configuration template
         template      = os.path.join(os.path.dirname(__file__), 'run_settings_template.py')
         bpod_settings = open(template, 'r').read().format(
@@ -146,7 +146,7 @@ class BoardCom(AsyncBpod, BoardIO):
             setup           = session.setup.name,
             session         = session.name,
             session_path    = session.path,
-            subjects        = ','.join( list(map(lambda x: "'"+x+"'", session.subjects)) )
+            subjects        = ','.join( list(map(lambda x: '"'+str(x)+'"', session.subjects)) )
         )
 
         for var in board_task.variables:
@@ -226,6 +226,8 @@ class BoardCom(AsyncBpod, BoardIO):
             if len(row)==6:
                 self._running_session.data.loc[len(self._running_session.data)] = row
 
+            if self._running_session.uuid4 is None and len(row)==2 and row[0]=='__UUID4__':
+                self._running_session.uuid4 = row[1]
             self.log2board(str(row))
 
             row = self.csvreader.readline()
@@ -253,6 +255,11 @@ class BoardCom(AsyncBpod, BoardIO):
         res = self._running_session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
         for index, row in res.iterrows():
             self._running_session.ended = dateutil.parser.parse(row['+INFO'])
+
+        session = self._running_session
+
+        filepath      = os.path.join(session.path, session.name+'.csv')
+        session.filepath = filepath if os.path.exists(filepath) else None
 
         self.status = self.STATUS_READY
 
