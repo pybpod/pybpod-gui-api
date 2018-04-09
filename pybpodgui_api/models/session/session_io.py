@@ -91,7 +91,8 @@ class SessionIO(SessionBase):
             self.data = pd.read_csv(filestream, 
                 delimiter=csv.CSV_DELIMITER, 
                 quotechar=csv.CSV_QUOTECHAR, 
-                quoting=csv.CSV_QUOTING, 
+                quoting=csv.CSV_QUOTING,
+                lineterminator=csv.CSV_LINETERMINATOR,
                 skiprows=nrows
             )
 

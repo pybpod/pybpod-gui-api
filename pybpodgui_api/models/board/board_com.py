@@ -33,6 +33,7 @@ from sca.formats.csv import CSV_DELIMITER, CSV_QUOTECHAR, CSV_QUOTING
 import csv
 
 from .non_blockingcsvreader import NonBlockingCSVReader
+from .non_blockingstreamreader import NonBlockingStreamReader
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ class BoardCom(AsyncBpod, BoardIO):
         # load bpod configuration template
         template      = os.path.join(os.path.dirname(__file__), 'run_settings_template.py')
         bpod_settings = open(template, 'r').read().format(
-            workspace_path  = "'{0}'".format(os.path.abspath(session.path) ),
+            workspace_path  = session.path.encode('unicode_escape').decode(),
             serialport      = board.serial_port,
             bnp_ports       = ('BPOD_BNC_PORTS_ENABLED = {0}'.format(board.enabled_bncports)            if board.enabled_bncports else '') ,
             wired_ports     = ('BPOD_WIRED_PORTS_ENABLED = {0}'.format(board.enabled_wiredports)        if board.enabled_wiredports else '') ,
@@ -145,22 +146,13 @@ class BoardCom(AsyncBpod, BoardIO):
             board           = board_task.board.name,
             setup           = session.setup.name,
             session         = session.name,
-            session_path    = session.path,
+            session_path    = session.path.encode('unicode_escape').decode(),
             subjects        = ','.join( list(map(lambda x: '"'+str(x)+'"', session.subjects)) )
         )
 
         for var in board_task.variables:
             bpod_settings += "\n"+str(var)
-        """
-        var.session += SessionInfo(self.INFO_CREATOR_NAME,      user_name)  # TODO
-        var.session += SessionInfo(self.INFO_PROJECT_NAME,      project_name)   
-        var.session += SessionInfo(self.INFO_EXPERIMENT_NAME,   experiment_name)
-        var.session += SessionInfo(self.INFO_SETUP_NAME, setup_name)
-        var.session += SessionInfo(var.session.INFO_SESSION_ENDED, datetime_now.now())
-        for subject in subjects: var.session += SessionInfo(self.INFO_SUBJECT_NAME, subject)
-        var.session += SessionInfo(self.INFO_BPODGUI_VERSION, pybpodgui_plugin.__version__)
-        """        
-
+       
         #create the bpod configuration file in the session folder
         settings_path = os.path.join(self._running_session.path,'user_settings.py')
         with open(settings_path, 'w' ) as out: out.write(bpod_settings) 
@@ -182,7 +174,7 @@ class BoardCom(AsyncBpod, BoardIO):
         self.start_run_task_handler()
 
         enviroment = os.environ.copy()
-        enviroment['PYTHONPATH'] = ":".join([os.path.abspath(self._running_session.path)]+sys.path)
+        enviroment['PYTHONPATH'] = os.pathsep.join([os.path.abspath(self._running_session.path)]+sys.path)
         
         session.data = pd.DataFrame(columns=['TYPE','PC-TIME','BPOD-INITIAL-TIME','BPOD-FINAL-TIME','MSG','+INFO'])
 
@@ -195,30 +187,13 @@ class BoardCom(AsyncBpod, BoardIO):
             env=enviroment
         )
 
-        """
-        # make stdin a non-blocking file
-        fd = self.proc.stdin.fileno()
-        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-        # make stdin a non-blocking file
-        fd = self.proc.stdout.fileno()
-        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-
-        # make stdin a non-blocking file
-        fd = self.proc.stderr.fileno()
-        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-        """
-        
-
         self.csvreader = NonBlockingCSVReader( 
             csv.reader( io.TextIOWrapper(self.proc.stdout, encoding='utf-8'), delimiter=CSV_DELIMITER, quotechar=CSV_QUOTECHAR, quoting=CSV_QUOTING )
         )
+
+        self.stderrstream = NonBlockingStreamReader(self.proc.stderr)
         
     def run_task_handler(self, flag=True):
-        
         
         row = self.csvreader.readline()
         while row is not None:
@@ -232,6 +207,8 @@ class BoardCom(AsyncBpod, BoardIO):
 
             row = self.csvreader.readline()
 
+        errline = self.stderrstream.readline()
+        if errline is not None: self.log2board(errline)
             
             #self._running_session.data.loc[len(self._running_session.data)] = row
             #msg = BpodMessageParser.fromlist(row)
@@ -244,8 +221,10 @@ class BoardCom(AsyncBpod, BoardIO):
         self.status = self.STATUS_RUNNING_TASK
 
     def end_run_task_handler(self):
+        errline = self.stderrstream.readline()
+        if errline is not None: self.log2board(errline)
+        
         del self.proc
-
 
         ## Execute the POST commands ################################## 
         #for cmd in self._running_task.commands:

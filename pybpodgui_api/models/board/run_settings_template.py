@@ -1,5 +1,5 @@
 SETTINGS_PRIORITY = 0
-WORKSPACE_PATH    =  {workspace_path}
+WORKSPACE_PATH    = '{workspace_path}'
 PROTOCOL_NAME     = '{session_name}.csv'
 SERIAL_PORT       = '{serialport}'
 NET_PORT          = {netport}
