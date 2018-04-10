@@ -48,7 +48,10 @@ class ExperimentIO(ExperimentBase):
         ################################################################################################################################
 
         # save setups
-        for setup in self.setups: setup.save(repository)
+        for setup in self.setups: 
+            setup.save(repository)
+            sessions_repo = setup.repository.find('sessions')
+            if sessions_repo is not None: sessions_repo.commit()
         
         repository.uuid4    = self.uuid4
         repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)

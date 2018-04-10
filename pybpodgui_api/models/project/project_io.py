@@ -126,20 +126,29 @@ class ProjectIO(ProjectBase):
         self.path = repository.path
 
         ########### SAVE THE TASKS ###########
-        for task in self.tasks:   task.save(repository)
+        for task in self.tasks:  task.save(repository)
+        tasks_repo = self.repository.find('tasks')
+        if tasks_repo is not None: tasks_repo.commit()
 
         ########### SAVE THE BOARDS ###########
         for board in self.boards: board.save(repository)
-
-        ########### SAVE THE SUBJECTS ###############
-        for subject in self.subjects:
-            subject.save(repository.sub_repository('subjects', subject.name, uuid4=subject.uuid4))
-
-        ########### SAVE THE EXPERIMENTS ############
-        for experiment in self.experiments: experiment.save(repository)
+        boards_repo = self.repository.find('boards')
+        if boards_repo is not None: boards_repo.commit()
 
         ########### SAVE THE SUBJECTS ###############
         for subject in self.subjects: subject.save(repository)
+        subjects_repo = self.repository.find('subjects')
+        if subjects_repo is not None: subjects_repo.commit()
+
+
+        ########### SAVE THE EXPERIMENTS ############
+        for experiment in self.experiments: 
+            experiment.save(repository)
+            setups_repo = experiment.repository.find('setups')
+            if setups_repo is not None: setups_repo.commit()
+
+        self.repository.find('experiments').commit()
+
 
         ########### SAVE THE PROJECT ############
 
