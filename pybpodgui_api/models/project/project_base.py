@@ -170,6 +170,27 @@ class ProjectBase(object):
             if subject.name == name: return subject
         return None
 
+    def find_subject_by_id(self, uuid):
+        """
+        Find a subject by the name
+
+        :ivar str name: Name of the subject to find.
+        :rtype: Subject
+        """
+        for subject in self.subjects:
+            if subject.uuid4 == uuid: return subject
+        return None
+
+    def find_session(self, uuid4):
+        print('finding sesions')
+        for experiment in self.experiments:
+            for setup in experiment.setups:
+                for session in setup.sessions:
+                    print(session.uuid4,uuid4)
+                    if session.uuid4 == uuid4:
+                        return session
+        return None
+
     def create_experiment(self):
         """
         Add an experiment to the project, and return it.

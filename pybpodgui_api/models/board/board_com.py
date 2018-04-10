@@ -4,6 +4,7 @@
 import datetime, dateutil
 import logging
 import os
+import ntpath
 import uuid
 import subprocess
 #import fcntl
@@ -36,7 +37,6 @@ from .non_blockingcsvreader import NonBlockingCSVReader
 from .non_blockingstreamreader import NonBlockingStreamReader
 
 logger = logging.getLogger(__name__)
-
 
 class BoardCom(AsyncBpod, BoardIO):
     #### SETUP STATUS ####

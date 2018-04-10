@@ -64,3 +64,14 @@ class SubjectIO(SubjectBase):
 
         self.uuid4 = repository.uuid4 if repository.uuid4 else self.uuid4
         self.name  = repository.name
+    
+    
+    def load_sessions(self, repository):
+        print('=====')
+        print('SUBJECT IO LOADING SESSIONS FOR ',self.uuid4)
+        print('=====')
+        for uuid4 in self._sessions:
+            print('find session',uuid4)
+            session = self.project.find_session(uuid4)
+            if session is not None:
+                self += session

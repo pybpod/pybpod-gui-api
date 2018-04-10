@@ -98,6 +98,8 @@ class SetupCom(SetupBaseIO):
 				detached=self.detached
 			)
 
+			for s in self.subjects: s+=session
+
 		except Exception as err:
 			logger.error(str(err), exc_info=True)
 			raise Exception("Unknown error found while running task. See log for more details.")

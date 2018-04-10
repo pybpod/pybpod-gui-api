@@ -34,7 +34,12 @@ class SessionBase(object):
         self.subjects           = [ str([s.name, str(s.uuid4)]) for s in setup.subjects]
         self.filepath           = None
 
-                
+        '''
+        for s in setup.subjects:
+            s+=self
+        '''
+
+    
 
     def __default_name(self, setup):
         return '_'.join([
@@ -58,8 +63,9 @@ class SessionBase(object):
 
         """
         pass
-    
 
+    
+    
     @property
     def setup(self):
         """

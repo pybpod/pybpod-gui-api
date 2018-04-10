@@ -79,8 +79,17 @@ class ProjectIO(ProjectBase):
                 experiment = self.create_experiment()
                 experiment.load(repo)
         
+        # load subjects
+        '''
+        print("LOADING SUBJECTS")
+        subjects_repo = self.repository.find('subjects')
+        if subjects_repo is not None:
+            for repo in subjects_repo.list():
+                print('subject', repo)
+                subject.load_sessions(repo)
+        print("SUBJECTS LOADED")
         logger.debug("==== LOAD FINNISHED ====")
-
+        '''
         
         self.data_hash = self.__generate_project_hash()
         
@@ -121,6 +130,10 @@ class ProjectIO(ProjectBase):
 
         ########### SAVE THE BOARDS ###########
         for board in self.boards: board.save(repository)
+
+        ########### SAVE THE SUBJECTS ###############
+        for subject in self.subjects:
+            subject.save(repository.sub_repository('subjects', subject.name, uuid4=subject.uuid4))
 
         ########### SAVE THE EXPERIMENTS ############
         for experiment in self.experiments: experiment.save(repository)

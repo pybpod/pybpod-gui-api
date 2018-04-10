@@ -186,6 +186,10 @@ class SetupBase(object):
         """
         return Session(self)
 
+    def clear_subjects(self):
+        for subj in self.subjects:
+            self -= subj
+
     def __unicode__(self):
         return self.name
 
@@ -198,6 +202,8 @@ class SetupBase(object):
         return self
 
     def __sub__(self, obj):
-        if isinstance(obj, Session): self._sessions.remove(obj)
-        if isinstance(obj, Subject): self._subjects.remove(obj)
+        if isinstance(obj, Session):
+            self._sessions.remove(obj)
+        if isinstance(obj, Subject): 
+            self._subjects.remove(obj)
         return self

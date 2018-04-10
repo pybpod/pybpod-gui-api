@@ -79,6 +79,8 @@ class SessionIO(SessionBase):
         except FileNotFoundError:
             pass
 
+
+
     def load_contents(self, init_func=None, update_func=None, end_func=None):
         """
         Parses session history file, line by line and populates the history message on memory.
@@ -86,8 +88,9 @@ class SessionIO(SessionBase):
         if not self.filepath: return
 
         nrows = csv.reader.count_metadata_rows(self.filepath)
-
+        print('count metadata done')
         with open(self.filepath) as filestream:
+            print('panding arround')
             self.data = pd.read_csv(filestream, 
                 delimiter=csv.CSV_DELIMITER, 
                 quotechar=csv.CSV_QUOTECHAR, 
@@ -138,8 +141,13 @@ class SessionIO(SessionBase):
 
                         elif msg.infoname==Session.INFO_SUBJECT_NAME:
                             self.subjects += [ msg.infovalue ]
-                            #name, uuid4 = eval(msg.infovalue)
+                            name, uuid4 = eval(msg.infovalue)
+                            subj = self.project.find_subject_by_id(uuid4)
+                            if subj is not None:
+                                subj += self
                     else:
                         count += 1
 
                 if count>50: break
+    
+    

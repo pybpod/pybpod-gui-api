@@ -18,10 +18,27 @@ class SubjectBase(object):
         self.project    = project
 
         self.project    += self
+
+        self._sessions = []
+
         
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
+
+
+    def __add__(self, value):
+        #pass
+        if isinstance(value, Session): self._sessions.append(value)
+        return self
+
+    def __sub__(self,obj):
+        if isinstance(obj,Session):
+            self._sessions.remove(obj)
+
+    def remove(self):
+        print('subject base removing session')
+
 
     def get_sessions(self):
         """
@@ -29,7 +46,7 @@ class SubjectBase(object):
 
         :rtype: list(Session)
         """
-
+        print('subject base get sessions')
         for exp in self.project.experiments:
             for setup in exp.setups:
                 for session in setup.sessions:
