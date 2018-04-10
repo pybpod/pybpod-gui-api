@@ -205,7 +205,7 @@ class BoardCom(BoardIO):
             if self._running_session.uuid4 is None and len(row)==2 and row[0]=='__UUID4__':
                 self._running_session.uuid4 = row[1]
             
-            data += str(row)
+            data += str(row)+'\n'
             
             self.freegui()
             row = self.csvreader.readline()
