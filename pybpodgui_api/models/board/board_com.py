@@ -190,10 +190,13 @@ class BoardCom(BoardIO):
         )
 
         self.stderrstream = NonBlockingStreamReader(self.proc.stderr)
+
+    def freegui(self):pass
         
     def run_task_handler(self, flag=True):
         
-        row = self.csvreader.readline()
+        row  = self.csvreader.readline()
+        data = ''
         while row is not None:
             if row is None: break
             if len(row)==6:
@@ -201,9 +204,14 @@ class BoardCom(BoardIO):
 
             if self._running_session.uuid4 is None and len(row)==2 and row[0]=='__UUID4__':
                 self._running_session.uuid4 = row[1]
-            self.log2board(str(row))
-
+            
+            data += str(row)
+            
+            self.freegui()
             row = self.csvreader.readline()
+
+        self.log2board(data)
+
 
         errline = self.stderrstream.readline()
         if errline is not None: self.log2board(errline)
