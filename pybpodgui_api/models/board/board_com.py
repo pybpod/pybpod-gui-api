@@ -18,7 +18,6 @@ import pandas as pd
 from AnyQt.QtCore import QTimer
 from pyforms import conf
 from pathlib import Path
-from pybpodgui_plugin.com.async.async_bpod import AsyncBpod
 
 from pybpodapi.session import Session
 from pybpodgui_api.models.setup import Setup
@@ -38,7 +37,7 @@ from .non_blockingstreamreader import NonBlockingStreamReader
 
 logger = logging.getLogger(__name__)
 
-class BoardCom(AsyncBpod, BoardIO):
+class BoardCom(BoardIO):
     #### SETUP STATUS ####
     STATUS_READY = 0
     STATUS_RUNNING_TASK = 1  # The board is busy running a task
@@ -55,7 +54,6 @@ class BoardCom(AsyncBpod, BoardIO):
 
     def __init__(self, project):
         BoardIO.__init__(self, project)
-        AsyncBpod.__init__(self)
         self.status = BoardCom.STATUS_READY
 
     ##########################################################################
