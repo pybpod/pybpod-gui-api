@@ -33,7 +33,7 @@ class SubjectBase(object):
         return self
 
     def __sub__(self,obj):
-        if isinstance(obj,Session):
+        if isinstance(obj,Session) and obj in self._sessions:
             self._sessions.remove(obj)
 
     def remove(self):

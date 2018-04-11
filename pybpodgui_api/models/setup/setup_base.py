@@ -202,8 +202,8 @@ class SetupBase(object):
         return self
 
     def __sub__(self, obj):
-        if isinstance(obj, Session):
+        if isinstance(obj, Session) and obj in self._sessions:
             self._sessions.remove(obj)
-        if isinstance(obj, Subject): 
+        if isinstance(obj, Subject) and obj in self._subjects:
             self._subjects.remove(obj)
         return self
