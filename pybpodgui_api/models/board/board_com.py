@@ -136,7 +136,6 @@ class BoardCom(BoardIO):
             wired_ports     = ('BPOD_WIRED_PORTS_ENABLED = {0}'.format(board.enabled_wiredports)        if board.enabled_wiredports else '') ,
             behavior_ports  = ('BPOD_BEHAVIOR_PORTS_ENABLED = {0}'.format(board.enabled_behaviorports)  if board.enabled_behaviorports else ''),
             session_name    = session.name,
-            publish_func    = 'PYBPOD_API_PUBLISH_DATA_FUNC = print' if not detached else '',
             netport         = board_task.board.net_port,
 
             project         = session.project.name,
@@ -205,7 +204,7 @@ class BoardCom(BoardIO):
             if self._running_session.uuid4 is None and len(row)==2 and row[0]=='__UUID4__':
                 self._running_session.uuid4 = row[1]
             
-            data += str(row)+'\n'
+            if len(row)>0: data += str(row)+'\n'
             
             self.freegui()
             row = self.csvreader.readline()
@@ -233,9 +232,9 @@ class BoardCom(BoardIO):
         del self.proc
 
         ## Execute the POST commands ################################## 
-        #for cmd in self._running_task.commands:
-        #    if cmd.when==1:
-        #        cmd.execute(session=self._running_session)
+        for cmd in self._running_task.commands:
+            if cmd.when==1:
+                cmd.execute(session=self._running_session)
         ############################################################### 
         res = self._running_session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
         for index, row in res.iterrows():
