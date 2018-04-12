@@ -182,11 +182,9 @@ class ProjectBase(object):
         return None
 
     def find_session(self, uuid4):
-        print('finding sesions')
         for experiment in self.experiments:
             for setup in experiment.setups:
                 for session in setup.sessions:
-                    print(session.uuid4,uuid4)
                     if session.uuid4 == uuid4:
                         return session
         return None

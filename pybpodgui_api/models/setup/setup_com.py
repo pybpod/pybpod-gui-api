@@ -99,6 +99,8 @@ class SetupCom(SetupBaseIO):
 			)
 
 			for s in self.subjects: s+=session
+			#we need this if we want to put the play button on the subject treenode's session correctly
+			self.project.update_ui()
 
 		except Exception as err:
 			logger.error(str(err), exc_info=True)
