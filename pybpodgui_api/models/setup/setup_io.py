@@ -61,7 +61,7 @@ class SetupBaseIO(SetupBase):
             repository['task']      = self.task.name if self.task else None
             repository['subjects']  = [subject.name for subject in self.subjects]
             repository['detached']  = self.detached
-            repository.update(self.board_task.save()) # collect board_task data
+            repository.update( self.board_task.save() ) # collect board_task data
             
             if self.board:                repository.add_external_ref(self.board.uuid4)
             for subject in self.subjects: repository.add_external_ref(subject.uuid4)
@@ -86,7 +86,7 @@ class SetupBaseIO(SetupBase):
         self.task  = repository.get('task', None)
 
         if self.board: repository.add_external_ref(self.board.uuid4)
-        if self.task: repository.add_external_ref(self.task.uuid4)
+        if self.task:  repository.add_external_ref(self.task.uuid4)
         
         self.detached = repository.get('detached', False)
         self.board_task.load(repository)

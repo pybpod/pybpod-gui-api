@@ -32,8 +32,8 @@ from pybpodapi.com.messaging.stderr import StderrMessage
 from sca.formats.csv import CSV_DELIMITER, CSV_QUOTECHAR, CSV_QUOTING
 import csv
 
-from .non_blockingcsvreader import NonBlockingCSVReader
-from .non_blockingstreamreader import NonBlockingStreamReader
+from .non_blockingcsvreader     import NonBlockingCSVReader
+from .non_blockingstreamreader  import NonBlockingStreamReader
 
 logger = logging.getLogger(__name__)
 
@@ -127,9 +127,10 @@ class BoardCom(BoardIO):
         :ivar BoardTask board_task: Configuration to run session.  
         :ivar str workspace_path: Not used. To be removed in the future.  
         """
-        self._running_detached = detached
-        self._running_task     = board_task.task
-        self._running_session  = session
+        self._running_detached  = detached
+        self._running_boardtask = board_task 
+        self._running_task      = board_task.task
+        self._running_session   = session
         
         board = board_task.board
 
@@ -185,6 +186,7 @@ class BoardCom(BoardIO):
         if detached:
             self.proc = subprocess.Popen(
                 ['python', os.path.abspath(task.filepath)],
+                stdin=subprocess.PIPE, 
                 cwd=self._running_session.path,
                 env=enviroment
             )
@@ -261,5 +263,19 @@ class BoardCom(BoardIO):
         res = session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
         for index, row in res.iterrows():
             session.ended = dateutil.parser.parse(row['+INFO'])
-            
+        
+        board_task = self._running_boardtask
+
+        if board_task.update_variables:
+            for var in board_task.variables:
+                res = session.data.query("TYPE=='VAL' and MSG=='{0}'".format(var.name) )
+                for index, row in res.tail(1).iterrows():
+                    value = row['+INFO']
+                    if var.datatype=='string':
+                        var.value = value
+                    else:
+                        value.isdigit()
+                        var.datatype==float(value)
+
+             
         

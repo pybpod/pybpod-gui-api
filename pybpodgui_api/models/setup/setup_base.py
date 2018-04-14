@@ -160,6 +160,10 @@ class SetupBase(object):
         else:
             return None
 
+    @property
+    def update_variables(self):
+        return self.board_task.update_variables
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################

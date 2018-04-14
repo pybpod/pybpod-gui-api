@@ -42,12 +42,15 @@ class SessionBase(object):
     
 
     def __default_name(self, setup):
+        return datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        """
         return '_'.join([
             setup.experiment.name,
             '+'.join([s.name for s in setup.subjects]),
             setup.task.name if setup.task is not None else 'None',
             datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         ])
+        """
 
     ##########################################################################
     ####### PROPERTIES #######################################################
