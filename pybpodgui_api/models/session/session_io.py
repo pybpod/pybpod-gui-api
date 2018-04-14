@@ -88,9 +88,8 @@ class SessionIO(SessionBase):
         if not self.filepath: return
 
         nrows = csv.reader.count_metadata_rows(self.filepath)
-        print('count metadata done')
+        
         with open(self.filepath) as filestream:
-            print('panding arround')
             self.data = pd.read_csv(filestream, 
                 delimiter=csv.CSV_DELIMITER, 
                 quotechar=csv.CSV_QUOTECHAR, 

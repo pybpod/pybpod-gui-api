@@ -108,7 +108,16 @@ class BoardCom(BoardIO):
 
     
     def log2board(self, data):
-        pass  
+        """
+        Function used to update the board log
+        """
+        pass
+
+    def freegui(self):
+        """
+        Function used to release the processing to update the GUI events
+        """
+        pass
     
     def run_task(self, session, board_task, workspace_path, detached=False):
         """
@@ -118,7 +127,7 @@ class BoardCom(BoardIO):
         :ivar BoardTask board_task: Configuration to run session.  
         :ivar str workspace_path: Not used. To be removed in the future.  
         """
-        
+        self._running_detached = detached
         self._running_task     = board_task.task
         self._running_session  = session
         
@@ -137,14 +146,15 @@ class BoardCom(BoardIO):
             behavior_ports  = ('BPOD_BEHAVIOR_PORTS_ENABLED = {0}'.format(board.enabled_behaviorports)  if board.enabled_behaviorports else ''),
             session_name    = session.name,
             netport         = board_task.board.net_port,
-
+            stream2stdout   = not detached,
             project         = session.project.name,
             experiment      = session.setup.experiment.name,
             board           = board_task.board.name,
             setup           = session.setup.name,
             session         = session.name,
             session_path    = session.path.encode('unicode_escape').decode(),
-            subjects        = ','.join( list(map(lambda x: '"'+str(x)+'"', session.subjects)) )
+            subjects        = ','.join( list(map(lambda x: '"'+str(x)+'"', session.subjects)) ),
+            variables_names = ','.join(["'"+var.name+"'" for var in board_task.variables])
         )
 
         for var in board_task.variables:
@@ -157,7 +167,6 @@ class BoardCom(BoardIO):
         #create the bpod configuration file in the session folder
         init_path = os.path.join(self._running_session.path,'__init__.py')
         with open(init_path, 'w' ) as out: pass
-
 
         ## Execute the PRE commands ################################### 
         for cmd in board_task.task.commands:
@@ -173,52 +182,52 @@ class BoardCom(BoardIO):
         enviroment = os.environ.copy()
         enviroment['PYTHONPATH'] = os.pathsep.join([os.path.abspath(self._running_session.path)]+sys.path)
         
-        session.data = pd.DataFrame(columns=['TYPE','PC-TIME','BPOD-INITIAL-TIME','BPOD-FINAL-TIME','MSG','+INFO'])
+        if detached:
+            self.proc = subprocess.Popen(
+                ['python', os.path.abspath(task.filepath)],
+                cwd=self._running_session.path,
+                env=enviroment
+            )
+        else:
+            session.data = pd.DataFrame(columns=['TYPE','PC-TIME','BPOD-INITIAL-TIME','BPOD-FINAL-TIME','MSG','+INFO'])
+            
+            self.proc = subprocess.Popen(
+                ['python', os.path.abspath(task.filepath)],
+                stdin=subprocess.PIPE, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE, 
+                cwd=self._running_session.path,
+                env=enviroment
+            )
+            self.csvreader = NonBlockingCSVReader( 
+                csv.reader( io.TextIOWrapper(self.proc.stdout, encoding='utf-8'), delimiter=CSV_DELIMITER, quotechar=CSV_QUOTECHAR, quoting=CSV_QUOTING )
+            )
+            self.stderrstream = NonBlockingStreamReader(self.proc.stderr)
 
-        self.proc = subprocess.Popen(
-            ['python', os.path.abspath(task.filepath)],
-            stdin=subprocess.PIPE, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            cwd=self._running_session.path,
-            env=enviroment
-        )
-
-        self.csvreader = NonBlockingCSVReader( 
-            csv.reader( io.TextIOWrapper(self.proc.stdout, encoding='utf-8'), delimiter=CSV_DELIMITER, quotechar=CSV_QUOTECHAR, quoting=CSV_QUOTING )
-        )
-
-        self.stderrstream = NonBlockingStreamReader(self.proc.stderr)
-
-    def freegui(self):pass
         
     def run_task_handler(self, flag=True):
         
-        row  = self.csvreader.readline()
-        data = ''
-        while row is not None:
-            if row is None: break
-            if len(row)==6:
-                self._running_session.data.loc[len(self._running_session.data)] = row
+        if not self._running_detached:
+        
+            row  = self.csvreader.readline()
+            data = ''
+            while row is not None:
+                if row is None: break
+                if len(row)==6:
+                    self._running_session.data.loc[len(self._running_session.data)] = row
 
-            if self._running_session.uuid4 is None and len(row)==2 and row[0]=='__UUID4__':
-                self._running_session.uuid4 = row[1]
-            
-            if len(row)>0: data += str(row)+'\n'
-            
-            self.freegui()
-            row = self.csvreader.readline()
+                if self._running_session.uuid4 is None and len(row)==2 and row[0]=='__UUID4__':
+                    self._running_session.uuid4 = row[1]
+                
+                if len(row)>0: data += str(row)+'\n'
+                
+                self.freegui()
+                row = self.csvreader.readline()
 
-        self.log2board(data)
+            self.log2board(data)
 
-
-        errline = self.stderrstream.readline()
-        if errline is not None: self.log2board(errline)
-            
-            #self._running_session.data.loc[len(self._running_session.data)] = row
-            #msg = BpodMessageParser.fromlist(row)
-            #self._running_session += msg
-            #self += msg
+            errline = self.stderrstream.readline()
+            if errline is not None: self.log2board(errline)
         
         if flag and self.proc.poll() is not None: self.end_run_task_handler()
 
@@ -226,24 +235,31 @@ class BoardCom(BoardIO):
         self.status = self.STATUS_RUNNING_TASK
 
     def end_run_task_handler(self):
-        errline = self.stderrstream.readline()
-        if errline is not None: self.log2board(errline)
-        
+        if not self._running_detached:
+            # in case it is running detached 
+            errline = self.stderrstream.readline()
+            if errline is not None: self.log2board(errline)
+            
         del self.proc
-
-        ## Execute the POST commands ################################## 
-        for cmd in self._running_task.commands:
-            if cmd.when==1:
-                cmd.execute(session=self._running_session)
-        ############################################################### 
-        res = self._running_session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
-        for index, row in res.iterrows():
-            self._running_session.ended = dateutil.parser.parse(row['+INFO'])
 
         session = self._running_session
 
-        filepath      = os.path.join(session.path, session.name+'.csv')
+        filepath         = os.path.join(session.path, session.name+'.csv')
         session.filepath = filepath if os.path.exists(filepath) else None
+
+
+        ## Execute the POST commands ################################## 
+        for cmd in self._running_task.commands:
+            if cmd.when==1: cmd.execute(session=session)
+        ############################################################### 
 
         self.status = self.STATUS_READY
 
+        if self._running_detached:
+            session.load_contents()
+            
+        res = session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
+        for index, row in res.iterrows():
+            session.ended = dateutil.parser.parse(row['+INFO'])
+            
+        

@@ -11,7 +11,7 @@ NET_PORT          = {netport}
 PYBPOD_API_LOG_LEVEL = None
 PYBPOD_API_LOG_FILE  = None
 
-PYBPOD_API_STREAM2STDOUT = True
+PYBPOD_API_STREAM2STDOUT = {stream2stdout}
 PYBPOD_API_ACCEPT_STDIN  = True
 
 PYBPOD_CREATOR 		= ''
@@ -26,3 +26,5 @@ PYBPOD_SUBJECTS 	= [{subjects}]
 #import logging
 #PYBPOD_API_LOG_LEVEL = logging.DEBUG
 #PYBPOD_API_LOG_FILE  = 'pybpod-api.log'
+
+PYBPOD_VARSNAMES = [{variables_names}]
