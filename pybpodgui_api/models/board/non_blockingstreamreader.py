@@ -1,4 +1,5 @@
-from threading import Thread
+from threading import Thread, Event
+
 from queue import Queue, Empty
 
 class NonBlockingStreamReader:
@@ -10,22 +11,28 @@ class NonBlockingStreamReader:
         '''
         self._s = stream
         self._q = Queue()
-        self._active = True
 
-        def _populateQueue(stream, queue):
-            '''
-            Collect lines from 'stream' and put them in 'quque'.
-            '''
-            while self._active:
-                line = stream.readline()
-                if line:
-                    queue.put(line)
-                else:
-                    self._active = False
-                    break
+        class PopulateQueue(Thread):
 
+            def __init__(self,socket, queue):
+                Thread.__init__(self)
+                self.daemon = True
+                self.socket = socket
+                self.queue  = queue
+                self.event  = Event()
 
-        self._t = Thread(target=_populateQueue, args=(self._s, self._q))
+            def run(self):
+                while True:
+                    if self.event.is_set(): break
+                    line = stream.readline()
+                    if line:
+                        self.queue.put(line)
+                    else:
+                        self.event.set()
+                    self.event.wait(0.01)
+                
+
+        self._t = PopulateQueue(self._s, self._q)
         self._t.daemon = True
         self._t.start() #start collecting lines from the stream
 
@@ -36,9 +43,7 @@ class NonBlockingStreamReader:
             return None
 
     def close(self):
-        try:
-            self._active = False
-        except SystemExit:
-            pass
+        self._t.event.set()
+        
 
 class UnexpectedEndOfStream(Exception): pass

@@ -33,6 +33,7 @@ class SessionBase(object):
         self.messages_history   = []
         self.subjects           = [ str([s.name, str(s.uuid4)]) for s in setup.subjects]
         self.filepath           = None
+        self.variables          = []
 
         '''
         for s in setup.subjects:
@@ -125,6 +126,14 @@ class SessionBase(object):
     @filepath.setter
     def filepath(self, value):
         self._filepath = value
+
+    @property
+    def variables(self):
+        return self._variables
+
+    @variables.setter
+    def variables(self, value):
+        self._variables = value
     
     @property
     def setup_name(self):

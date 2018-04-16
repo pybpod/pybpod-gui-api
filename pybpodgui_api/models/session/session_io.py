@@ -102,6 +102,17 @@ class SessionIO(SessionBase):
         for index, row in res.iterrows():
             self.ended = dateutil.parser.parse(row['+INFO'])
 
+        res = self.data.query("TYPE in ['VAL', 'TRIAL'] or MSG=='SESSION-ENDED'")
+        variables = []
+        for index, row in res.iterrows():
+            if row['TYPE']=='TRIAL':
+                variables.append(['New trial', None])
+            elif row['MSG']=='SESSION-ENDED':
+                variables.append(['Session ended', None])
+            else:
+                variables.append([row['MSG'],row['+INFO']])
+        self.variables = variables
+
     def load_info(self):
         if not self.filepath: return
 

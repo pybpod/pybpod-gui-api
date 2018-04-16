@@ -64,9 +64,9 @@ class ExecCmd(TaskCommand):
         subprocess.Popen(
             self.cmd.split(' '),
             cwd=self.task.path,
-            stdin=subprocess.PIPE, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE
+            #stdin=subprocess.PIPE, 
+            #stdout=subprocess.PIPE, 
+            #stderr=subprocess.PIPE
         )
 
     def __str__(self): 

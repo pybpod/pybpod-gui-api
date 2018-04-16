@@ -182,7 +182,7 @@ class BoardCom(BoardIO):
 
         enviroment = os.environ.copy()
         enviroment['PYTHONPATH'] = os.pathsep.join([os.path.abspath(self._running_session.path)]+sys.path)
-        
+
         if detached:
             self.proc = subprocess.Popen(
                 ['python', os.path.abspath(task.filepath)],
@@ -226,7 +226,7 @@ class BoardCom(BoardIO):
                 self.freegui()
                 row = self.csvreader.readline()
 
-            self.log2board(data)
+            if len(data)>0: self.log2board(data)
 
             errline = self.stderrstream.readline()
             if errline is not None: self.log2board(errline)
@@ -236,13 +236,18 @@ class BoardCom(BoardIO):
     def start_run_task_handler(self):
         self.status = self.STATUS_RUNNING_TASK
 
+    def stop_thread(self):
+        pass
+
     def end_run_task_handler(self):
+        self.stop_thread()
+        
         if not self._running_detached:
             # in case it is running detached 
             errline = self.stderrstream.readline()
             if errline is not None: self.log2board(errline)
             
-        del self.proc
+        #del self.proc
 
         session = self._running_session
 
