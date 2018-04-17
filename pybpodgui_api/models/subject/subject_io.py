@@ -67,11 +67,7 @@ class SubjectIO(SubjectBase):
     
     
     def load_sessions(self, repository):
-        print('=====')
-        print('SUBJECT IO LOADING SESSIONS FOR ',self.uuid4)
-        print('=====')
         for uuid4 in self._sessions:
-            print('find session',uuid4)
             session = self.project.find_session(uuid4)
             if session is not None:
                 self += session
