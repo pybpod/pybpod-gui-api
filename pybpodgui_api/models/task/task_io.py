@@ -34,7 +34,7 @@ class TaskIO(TaskBase):
         """
 
         # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
-        repository = self.repository = self.repository if self.repository else parent_repository.sub_repository('tasks', self.name, uuid4=self.uuid4, fileformat='py')
+        repository = self.repository = self.repository if self.repository else parent_repository.sub_repository(self.name, uuid4=self.uuid4, fileformat='py')
         ################################################################################################################################
 
         #force the creation of the file

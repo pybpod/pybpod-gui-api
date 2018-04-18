@@ -265,22 +265,23 @@ class BoardCom(BoardIO):
         if self._running_detached:
             session.load_contents()
             
-        res = session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
-        for index, row in res.iterrows():
-            session.ended = dateutil.parser.parse(row['+INFO'])
+        if session.data is not None:
+            res = session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
+            for index, row in res.iterrows():
+                session.ended = dateutil.parser.parse(row['+INFO'])
         
-        board_task = self._running_boardtask
+            board_task = self._running_boardtask
 
-        if board_task.update_variables:
-            for var in board_task.variables:
-                res = session.data.query("TYPE=='VAL' and MSG=='{0}'".format(var.name) )
-                for index, row in res.tail(1).iterrows():
-                    value = row['+INFO']
-                    if var.datatype=='string':
-                        var.value = value
-                    else:
-                        value.isdigit()
-                        var.datatype==float(value)
+            if board_task.update_variables:
+                for var in board_task.variables:
+                    res = session.data.query("TYPE=='VAL' and MSG=='{0}'".format(var.name) )
+                    for index, row in res.tail(1).iterrows():
+                        value = row['+INFO']
+                        if var.datatype=='string':
+                            var.value = value
+                        else:
+                            value.isdigit()
+                            var.datatype==float(value)
 
              
         

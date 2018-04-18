@@ -126,20 +126,19 @@ class ProjectIO(ProjectBase):
         self.path = repository.path
 
         ########### SAVE THE TASKS ###########
-        for task in self.tasks:  task.save(repository)
-        tasks_repo = self.repository.find('tasks')
-        if tasks_repo is not None: tasks_repo.commit()
-
+        tasks_repo = self.repository.sub_repository('tasks')
+        for task in self.tasks: task.save(tasks_repo)
+        tasks_repo.commit()
+        
         ########### SAVE THE BOARDS ###########
-        for board in self.boards: board.save(repository)
-        boards_repo = self.repository.find('boards')
-        if boards_repo is not None: boards_repo.commit()
+        boards_repo = self.repository.sub_repository('boards')
+        for board in self.boards: board.save(boards_repo)
+        boards_repo.commit()
 
         ########### SAVE THE SUBJECTS ###############
-        for subject in self.subjects: subject.save(repository)
-        subjects_repo = self.repository.find('subjects')
-        if subjects_repo is not None: subjects_repo.commit()
-
+        subjects_repo = self.repository.sub_repository('subjects')
+        for subject in self.subjects: subject.save(subjects_repo)
+        subjects_repo.commit()
 
         ########### SAVE THE EXPERIMENTS ############
         for experiment in self.experiments: 
@@ -161,7 +160,6 @@ class ProjectIO(ProjectBase):
 
         repository.commit()
         
-
         """
         tasks_repo = self.repository.find('tasks')
         print('tasks', [c.name for c in tasks_repo.children])
