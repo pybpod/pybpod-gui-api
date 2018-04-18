@@ -7,7 +7,6 @@ import glob
 import hashlib, pybpodgui_api
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from sca.formats import json
-from sca.storage.repository import Repository
 
 from pybpodgui_api.models.project.project_base import ProjectBase
 
@@ -21,7 +20,6 @@ class ProjectIO(ProjectBase):
     def __init__(self):
         super(ProjectIO, self).__init__()
 
-        self.repository = None # repository which will manage project files 
         self.data_hash  = None
 
     ##########################################################################
@@ -34,62 +32,58 @@ class ProjectIO(ProjectBase):
 
         :ivar str project_path: Full path of the project to load.
         """
-        self.repository = Repository(project_path).open()
+        self.name = os.path.basename(project_path)
+        self.path = project_path
 
-        #print()
-        #self.repository.pprint()
-        #print()
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
 
-        self.uuid4= self.repository.uuid4 if self.repository.uuid4 else self.uuid4
-        self.name = self.repository.name
-        self.path = self.repository.path
+        self.uuid4= data.uuid4 if data.uuid4 else self.uuid4
+
+        
+        
         
         logger.debug("==== LOAD TASKS ====")
 
-        tasks_repo = self.repository.find('tasks')
-        if tasks_repo is not None:
-            for repo in tasks_repo.list():
+        #load tasks
+        taskspath = os.path.join(self.path, 'tasks')
+        if os.path.exists(taskspath):
+            for name in os.listdir(taskspath):
+                if os.path.isfile( os.path.join(taskspath, name) ): continue
                 task = self.create_task()
-                task.load(repo)
+                task.load( os.path.join(taskspath, name) )
 
         logger.debug("==== LOAD BOARDS ====")
 
         # load boards
-        boards_repo = self.repository.find('boards')
-        if boards_repo is not None:
-            for repo in boards_repo.list():
+        boardspath = os.path.join(self.path, 'boards')
+        if os.path.exists(boardspath):
+            for name in os.listdir(boardspath):
+                if os.path.isfile( os.path.join(boardspath, name) ): continue
                 board = self.create_board()
-                board.load(repo)
+                board.load( os.path.join(boardspath, name) )
 
         logger.debug("==== LOAD SUBJECTS ====")
 
         # load subjects
-        subjects_repo = self.repository.find('subjects')
-        if subjects_repo is not None:
-            for repo in subjects_repo.list():
+        subjectspath = os.path.join(self.path, 'subjects')
+        if os.path.exists(subjectspath):
+            for name in os.listdir(subjectspath):
+                if os.path.isfile( os.path.join(subjectspath, name) ): continue
                 subject = self.create_subject()
-                subject.load(repo)
+                subject.load( os.path.join(subjectspath, name) )
 
         logger.debug("==== LOAD EXPERIMENTS ====")
 
         # load experiments
-        experiments_repo = self.repository.find('experiments')
-        if experiments_repo is not None:
-            for repo in experiments_repo.list():
+        experimentspath = os.path.join(self.path, 'experiments')
+        if os.path.exists(experimentspath):
+            for name in os.listdir(experimentspath):
+                if os.path.isfile( os.path.join(experimentspath, name) ): continue
                 experiment = self.create_experiment()
-                experiment.load(repo)
+                experiment.load( os.path.join(experimentspath, name) )
         
-        # load subjects
-        '''
-        print("LOADING SUBJECTS")
-        subjects_repo = self.repository.find('subjects')
-        if subjects_repo is not None:
-            for repo in subjects_repo.list():
-                print('subject', repo)
-                subject.load_sessions(repo)
-        print("SUBJECTS LOADED")
         logger.debug("==== LOAD FINNISHED ====")
-        '''
         
         self.data_hash = self.__generate_project_hash()
         
@@ -105,87 +99,59 @@ class ProjectIO(ProjectBase):
         logger.debug("current project name: %s", self.name)
         logger.debug("current project path: %s", self.path)
 
-
-        #if not self.path and os.path.exists(project_path):
-        #    raise FileExistsError("Project folder already exists")
-
-        # Check if we are updating a repository previously loaded or creating a new one.
-        if self.repository:
-
-            if project_path==self.repository.path:
-                # If we are saving to the same folder,
-                # then we are going to do a repository update.
-                repository = self.repository
-            else:
-                # If we are saving the repository to a diferent path,
-                # then we are going to do a "save as".
-                repository = Repository(project_path)
-        else:
-            repository = Repository(project_path)
-
-        self.path = repository.path
-
-        ########### SAVE THE TASKS ###########
-        tasks_repo = self.repository.sub_repository('tasks')
-        for task in self.tasks: task.save(tasks_repo)
-        tasks_repo.commit()
-        
+        ########### SAVE THE TASKS ############
+        taskspath  = os.path.join(self.path, 'tasks')
+        if not os.path.exists(taskspath): os.makedirs(taskspath)
+        for task in self.tasks: task.save()
+        self.remove_non_existing_repositories(taskspath, [task.name for task in self.tasks])
+ 
         ########### SAVE THE BOARDS ###########
-        boards_repo = self.repository.sub_repository('boards')
-        for board in self.boards: board.save(boards_repo)
-        boards_repo.commit()
-
+        boardspath  = os.path.join(self.path, 'boards')
+        if not os.path.exists(boardspath): os.makedirs(boardspath)
+        for board in self.boards: board.save()
+        self.remove_non_existing_repositories(boardspath, [board.name for board in self.boards])
+        
         ########### SAVE THE SUBJECTS ###############
-        subjects_repo = self.repository.sub_repository('subjects')
-        for subject in self.subjects: subject.save(subjects_repo)
-        subjects_repo.commit()
-
+        subjectspath  = os.path.join(self.path, 'subjects')
+        if not os.path.exists(subjectspath): os.makedirs(subjectspath)
+        for subject in self.subjects: subject.save()
+        self.remove_non_existing_repositories(subjectspath, [subject.name for subject in self.subjects])
+        
         ########### SAVE THE EXPERIMENTS ############
-        for experiment in self.experiments: 
-            experiment.save(repository)
-            setups_repo = experiment.repository.find('setups')
-            if setups_repo is not None: setups_repo.commit()
-
-        self.repository.find('experiments').commit()
-
+        experimentspath  = os.path.join(self.path, 'experiments')
+        if not os.path.exists(experimentspath): os.makedirs(experimentspath)
+        for experiment in self.experiments: experiment.save()
+        self.remove_non_existing_repositories(experimentspath, [experiment.name for experiment in self.experiments])
+        
+        
 
         ########### SAVE THE PROJECT ############
 
-         # create root nodes
-        repository.uuid4    = self.uuid4
-        repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
-        repository.def_url  = 'http://pybpod.readthedocs.org'
-        repository.def_text = 'This file contains information about a PyBpod project.'
-        repository.name     = self.name
-
-        repository.commit()
+        data = json.scadict(
+            uuid4_id=self.uuid4,
+            software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+            def_url ='http://pybpod.readthedocs.org',
+            def_text='This file contains information about a PyBpod project.'
+        )
         
-        """
-        tasks_repo = self.repository.find('tasks')
-        print('tasks', [c.name for c in tasks_repo.children])
-        boards_repo = self.repository.find('boards')
-        print('boards', [c.name for c in boards_repo.children])
-        subjects_repo = self.repository.find('subjects')
-        print('subjects', [c.name for c in subjects_repo.children])
-        experiments_repo = self.repository.find('experiments')
-        print('experiments', [c.name for c in experiments_repo.children])
-        
-        for arep in repository.find('experiments').list():
-            for brep in arep.find('setups').list():
-                crep = brep.find('sessions')
-                print('session','|', brep.name,'|', crep.name,'|', [c.name for c in crep.children])
-        #repository.close_save_session()
-        """
-        #repository.pprint()
+        config_path = os.path.join(self.path, self.name+'.json')
+        with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
         self.data_hash = self.__generate_project_hash()
 
-        return repository
 
 
+    def remove_non_existing_repositories(self, path, names):
+        try:
+            nodes = os.listdir(path)
+        except:
+            nodes = []
 
-
-
+        for nodename in nodes:
+            if nodename not in names:
+                nodepath = os.path.join(path, nodename)
+                if not os.path.isfile(nodepath): 
+                    send2trash(nodepath)
 
 
 

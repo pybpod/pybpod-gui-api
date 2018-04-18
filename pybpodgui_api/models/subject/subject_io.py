@@ -18,16 +18,14 @@ class SubjectIO(SubjectBase):
     def __init__(self, project):
         super(SubjectIO, self).__init__(project)
 
-        # repository that will manage the project files
-        self.repository = None
-
+       
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
     
-    def save(self, parent_repository):
+    def save(self):
         """
         Save subject data on filesystem.
 
@@ -38,40 +36,28 @@ class SubjectIO(SubjectBase):
         if not self.name:
             logger.warning("Skipping subject without name")
             return None
-        else:
-            # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
-            repository = self.repository = self.repository if self.repository else parent_repository.sub_repository('subjects', self.name, uuid4=self.uuid4)
-            ################################################################################################################################
+        else:  
+            if not os.path.exists(self.path): os.makedirs(self.path)
 
-            repository.uuid4    = self.uuid4
-            repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
-            repository.def_url  = 'http://pybpod.readthedocs.org'
-            repository.def_text = 'This file contains information about a subject used on PyBpod GUI.'
-            repository.name     = self.name
+            data = json.scadict(
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url ='http://pybpod.readthedocs.org',
+                def_text='This file contains information about a subject used on PyBpod GUI.'
+            )
             
-            repository.commit()
+            config_path = os.path.join(self.path, self.name+'.json')
+            with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
-            return repository
-
-    def load(self, repository):
+    def load(self, path):
         """
         Load sebject data from filesystem
 
         :ivar str subject_path: Path of the subject
         :ivar dict data: data object that contains all subject info
         """
-        self.repository = repository
-
-        self.uuid4 = repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name  = repository.name
+        self.name  = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
+        self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
     
-    
-    def load_sessions(self, repository):
-        print('=====')
-        print('SUBJECT IO LOADING SESSIONS FOR ',self.uuid4)
-        print('=====')
-        for uuid4 in self._sessions:
-            print('find session',uuid4)
-            session = self.project.find_session(uuid4)
-            if session is not None:
-                self += session

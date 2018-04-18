@@ -19,10 +19,7 @@ class BoardIO(BoardBase):
     def __init__(self, project):
         super(BoardIO, self).__init__(project)
 
-        # repository that will manage the project files
-        self.repository = None
-
-    
+        
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
@@ -33,7 +30,7 @@ class BoardIO(BoardBase):
 
         return data
 
-    def save(self, parent_repository):
+    def save(self):
         """
         Save experiment data on filesystem.
 
@@ -45,43 +42,40 @@ class BoardIO(BoardBase):
             logger.warning("Skipping board without name")
             return None
         else:
+            if not os.path.exists(self.path): os.makedirs(self.path)
 
-            # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
-            repository = self.repository = self.repository if self.repository else parent_repository.sub_repository(self.name, uuid4=self.uuid4)
-            ################################################################################################################################
+            data = json.scadict(
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url ='http://pybpod.readthedocs.org',
+                def_text='This file contains the configuration of Bpod board.'
+            )
+            data['serial-port']           = self.serial_port
+            data['enabled-bncports']      = self.enabled_bncports
+            data['enabled-wiredports']    = self.enabled_wiredports
+            data['enabled-behaviorports'] = self.enabled_behaviorports
+            data['net-port']              = self.net_port
+            
+            config_path = os.path.join(self.path, self.name+'.json')
+            with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
-            repository.uuid4    = self.uuid4
-            repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
-            repository.def_url  = 'http://pybpod.readthedocs.org'
-            repository.def_text = 'This file contains the configuration of Bpod board.'
-            repository.name     = self.name
-            
-            repository['serial-port']           = self.serial_port
-            repository['enabled-bncports']      = self.enabled_bncports
-            repository['enabled-wiredports']    = self.enabled_wiredports
-            repository['enabled-behaviorports'] = self.enabled_behaviorports
-            repository['net-port']              = self.net_port
-            
-            repository.commit()
-            
-            return repository
-
-    def load(self, repository):
+    def load(self, path):
         """
         Load board data from filesystem
 
         :ivar str board_path: Path of the board
         :ivar dict data: data object that contains all board info
         """
-        self.repository = repository
-        
-        self.uuid4                  = repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name                   = repository.name
-        self.serial_port            = repository.get('serial-port',           repository.get('serial_port', None) )
-        self.enabled_bncports       = repository.get('enabled-bncports',      None)
-        self.enabled_wiredports     = repository.get('enabled-wiredports',    None)
-        self.enabled_behaviorports  = repository.get('enabled-behaviorports', None)
-        self.net_port  = repository.get('net-port', None)
+        self.name = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
+
+        self.uuid4                  = data.uuid4 if data.uuid4 else self.uuid4
+        self.serial_port            = data.get('serial-port',           data.get('serial_port', None) )
+        self.enabled_bncports       = data.get('enabled-bncports',      None)
+        self.enabled_wiredports     = data.get('enabled-wiredports',    None)
+        self.enabled_behaviorports  = data.get('enabled-behaviorports', None)
+        self.net_port               = data.get('net-port', None)
 
 
     def __generate_boards_path(self, project_path):

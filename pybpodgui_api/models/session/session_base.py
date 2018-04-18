@@ -31,7 +31,7 @@ class SessionBase(object):
         self.started            = datetime.datetime.now()
         self.ended              = None
         self.messages_history   = []
-        self.subjects           = [ str([s.name, str(s.uuid4)]) for s in setup.subjects]
+        self.subjects           = []
         self.filepath           = None
         self.variables          = []
 

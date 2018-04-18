@@ -170,7 +170,7 @@ class ProjectBase(object):
             if subject.name == name: return subject
         return None
 
-    def find_subject_by_id(self, uuid):
+    def find_subject_by_id(self, uuid4):
         """
         Find a subject by the name
 
@@ -178,7 +178,7 @@ class ProjectBase(object):
         :rtype: Subject
         """
         for subject in self.subjects:
-            if subject.uuid4 == uuid: return subject
+            if subject.uuid4 == uuid4: return subject
         return None
 
     def find_session(self, uuid4):

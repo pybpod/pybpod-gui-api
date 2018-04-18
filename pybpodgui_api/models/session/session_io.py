@@ -12,7 +12,9 @@ from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
 
 from sca.formats import csv
-import pandas as pd
+import pandas as pd, logging
+
+logger = logging.getLogger(__name__)
 
 class SessionIO(SessionBase):
     """
@@ -24,62 +26,53 @@ class SessionIO(SessionBase):
     def __init__(self, setup):
         super(SessionIO, self).__init__(setup)
 
-        # repository that will manage the project files
-        self.repository = None
+        #initial name. Used to track if the name was updated
+        self.initial_name = None
 
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
-    def save(self, parent_repository):
+    def save(self):
         """
 
         :param parent_path:
         :return:
         """    
-        oldname = os.path.basename(os.path.dirname(self.filepath)) if self.filepath else self.name
-  
-        # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
-        repository = self.repository = self.repository if self.repository else parent_repository.sub_repository('sessions', oldname, uuid4=self.uuid4, fileformat='csv')
-        ################################################################################################################################
+        if not self.name:
+            logger.warning("Skipping session without name")
+        else:
+            if self.initial_name is not None:
+                initial_path = os.path.join(self.setup.path, 'sessions', self.initial_name)
 
-        repository.fileformat = 'csv'
-        repository.uuid4   = self.uuid4
-        repository.name    = self.name
-        repository.commit()
+                if initial_path!=self.path:
+                    shutil.move( initial_path, self.path )
+                    current_filepath = os.path.join(self.path, self.initial_name+'.csv')
+                    future_filepath  = os.path.join(self.path, self.name+'.csv')
+                    shutil.move( current_filepath, future_filepath )
 
-        """
-        #repository.save()
-        oldfolder = os.path.dirname(self.filepath)
-        if os.path.exists(self.filepath):
-            os.rename(self.filepath, os.path.join(self.path, self.name+'.csv') )
-            self.filepath = os.path.join(self.path, self.name+'.csv')
-        os.rename(oldfolder, self.path)
-        """
-        return repository
-        
+            self.initial_name = self.name
 
-    def load(self, repository):
+    def load(self, path):
         """
 
         :param session_path:
         :param data:
         :return:
         """
-        self.repository = repository
-        self.name       = repository.name
-
+        self.name  = os.path.basename(path)
         # only set the filepath if it exists
         filepath      = os.path.join(self.path, self.name+'.csv')
-        self.filepath = filepath if os.path.exists(filepath) else None
-
+        
         try:
-            self.load_info()
+            self.filepath = filepath
+            csvreader  = self.load_info()
+            self.uuid4 = csvreader.uuid4
         except FileNotFoundError:
-            pass
-
-
+            logger.warning('File not found: '+filepath)
+            self.filepath = None
+        
 
     def load_contents(self, init_func=None, update_func=None, end_func=None):
         """
@@ -117,9 +110,7 @@ class SessionIO(SessionBase):
         if not self.filepath: return
 
         with open(self.filepath) as filestream:
-            
-            csvreader = csv.reader(filestream)
-
+            csvreader  = csv.reader(filestream)
             self.subjects = []
 
             count = 0
@@ -159,5 +150,7 @@ class SessionIO(SessionBase):
                         count += 1
 
                 if count>50: break
+
+            return csvreader
     
     

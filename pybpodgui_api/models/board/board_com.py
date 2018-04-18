@@ -127,6 +127,8 @@ class BoardCom(BoardIO):
         :ivar BoardTask board_task: Configuration to run session.  
         :ivar str workspace_path: Not used. To be removed in the future.  
         """
+        session.subjects = [str([s.name, str(s.uuid4)]) for s in board_task.setup.subjects]
+
         self._running_detached  = detached
         self._running_boardtask = board_task 
         self._running_task      = board_task.task

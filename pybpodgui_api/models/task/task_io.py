@@ -1,7 +1,8 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os
+import logging, os, pybpodgui_api
+from sca.formats import json
 from pybpodgui_api.models.task.task_base import TaskBase
 
 logger = logging.getLogger(__name__)
@@ -15,15 +16,12 @@ class TaskIO(TaskBase):
     def __init__(self, project=None):
         super(TaskIO, self).__init__(project)
 
-        # repository that will manage the project files
-        self.repository = None
-
-
+        
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
-    def save(self, parent_repository):
+    def save(self):
         """
         Save setup data on filesystem.
 
@@ -33,38 +31,53 @@ class TaskIO(TaskBase):
         :rtype: dict
         """
 
-        # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
-        repository = self.repository = self.repository if self.repository else parent_repository.sub_repository(self.name, uuid4=self.uuid4, fileformat='py')
-        ################################################################################################################################
+        if (self.path and not os.path.exists(self.path)) or not self.path:
+            self.make_path()
 
-        #force the creation of the file
-        self.filepath = self.make_emptyfile() if not self.filepath else self.filepath
+        if (self.filepath and not os.path.exists(self.filepath)) or not self.filepath:
+            self.filepath = self.make_emptyfile()
 
-        repository.path                 = self.path
-        repository['name']              = self.name
-        repository['trigger-softcodes'] = self.trigger_softcodes
-        repository['commands']          = [cmd.save() for cmd in self.commands]
-        repository.name                 = self.name
+        """
+        current_path     = os.path.dirname(self.filepath)
+        current_filename = os.path.basename(self.filepath)
+        future_path      = self.path
         
-        repository.commit()
+        if current_path!=future_path:
+            shutil.move( current_path, future_path )
+            current_filepath = os.path.join(future_path, current_filename)
+            future_filepath  = os.path.join(future_path, self.name+'.py')
+            shutil.move( current_filepath, future_filepath )
+        """
 
+        data = json.scadict(
+            uuid4_id=self.uuid4,
+            software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+            def_url ='http://pybpod.readthedocs.org',
+            def_text='This file contains information about a PyBpod protocol.'
+        )
+        data['name']              = self.name
+        data['trigger-softcodes'] = self.trigger_softcodes
+        data['commands']          = [cmd.save() for cmd in self.commands]
         
+        config_path = os.path.join(self.path, self.name+'.json')
+        with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
 
-    def load(self, repository):
+    def load(self, path):
         """
         Load setup data from filesystem
 
         :ivar str task_path: Path of the task
         :ivar dict data: data object that contains all task info
         """
-        self.repository = repository
-
-        self.name     = repository.name
-        self.uuid4    = repository.uuid4 if repository.uuid4 else self.uuid4
+        self.name     = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
+        self.uuid4    = data.uuid4 if data.uuid4 else self.uuid4
         self.filepath = os.path.join(self.path, self.name+'.py')
-        self.trigger_softcodes = repository.get('trigger-softcodes', None)
 
-        for data in repository.get('commands', []):
-            cmd = getattr(self, data['type'])()
-            cmd.load(data)
+        self.trigger_softcodes = data.get('trigger-softcodes', None)
+
+        for cmddata in data.get('commands', []):
+            cmd = getattr(self, cmddata['type'])()
+            cmd.load(cmddata)

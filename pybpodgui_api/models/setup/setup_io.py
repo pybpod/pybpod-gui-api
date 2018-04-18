@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os, glob, hashlib
+import os, glob, hashlib, shutil
 import pybpodgui_api
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from pybpodgui_api.models.setup.setup_base import SetupBase
@@ -18,8 +18,9 @@ class SetupBaseIO(SetupBase):
     def __init__(self, experiment):
         super(SetupBaseIO, self).__init__(experiment)
 
-        # repository that will manage the project files
-        self.repository = None
+        #initial name. Used to track if the name was updated
+        self.initial_name = None
+
 
 
     ##########################################################################
@@ -33,7 +34,7 @@ class SetupBaseIO(SetupBase):
         return data
 
 
-    def save(self, parent_repository):
+    def save(self):
         """
         Save setup data on filesystem.
 
@@ -44,62 +45,78 @@ class SetupBaseIO(SetupBase):
         if not self.name:
             logger.warning("Skipping setup without name")
         else:
-            # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
-            repository = self.repository = self.repository if self.repository else parent_repository.sub_repository('setups', self.name, uuid4=self.uuid4)
-            ################################################################################################################################
+
+            if self.initial_name is not None:
+                initial_path = os.path.join(self.experiment.path, 'setups', self.initial_name)
+
+                if initial_path!=self.path:
+                    shutil.move( initial_path, self.path )
+                    current_filepath = os.path.join(self.path, self.initial_name+'.json')
+                    future_filepath  = os.path.join(self.path, self.name+'.json')
+                    shutil.move( current_filepath, future_filepath )
+            
+            if not os.path.exists(self.path): os.makedirs(self.path)
 
             # save sessions
-            for session in self.sessions: session.save(repository)
+            for session in self.sessions: session.save()
 
-            repository.uuid4        = self.uuid4
-            repository.software     = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
-            repository.def_url      = 'http://pybpod.readthedocs.org'
-            repository.def_text     = 'This file contains the configuration of a setup from PyBpod system.'
-            repository.name         = self.name
+            self.project.remove_non_existing_repositories(
+                os.path.join(self.path, 'sessions'),
+                [session.name for session in self.sessions]
+            )
             
-            repository['board']     = self.board.name if self.board else None
-            repository['task']      = self.task.name if self.task else None
-            repository['subjects']  = [subject.name for subject in self.subjects]
-            repository['detached']  = self.detached
-            repository.update( self.board_task.save() ) # collect board_task data
+            data = json.scadict(
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url ='http://pybpod.readthedocs.org',
+                def_text='This file contains information about a PyBpod experiment setup.'
+            )
+            data['board']     = self.board.name if self.board else None
+            data['task']      = self.task.name if self.task else None
+            data['subjects']  = [subject.name for subject in self.subjects]
+            data['detached']  = self.detached
+            data.update( self.board_task.save() ) # collect board_task data
             
-            if self.board:                repository.add_external_ref(self.board.uuid4)
-            for subject in self.subjects: repository.add_external_ref(subject.uuid4)
+            if self.board:                data.add_external_ref(self.board.uuid4)
+            for subject in self.subjects: data.add_external_ref(subject.uuid4)
 
-            repository.commit()
-            
-            return repository
+            config_path = os.path.join(self.path, self.name+'.json')
+            with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
-    def load(self, repository):
+            self.initial_name = self.name
+
+            
+
+
+
+
+    def load(self, path):
         """
         Load setup data from filesystem
 
         :ivar str setup_path: Path of the setup
         :ivar dict data: data object that contains all setup info
         """
-        self.repository = repository
+        self.name  = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
+        self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
 
-        self.name = repository.name
-
-        self.uuid4 = repository.uuid4 if repository.uuid4 else self.uuid4
-        self.board = repository.get('board', None)
-        self.task  = repository.get('task', None)
-
-        if self.board: repository.add_external_ref(self.board.uuid4)
-        if self.task:  repository.add_external_ref(self.task.uuid4)
+        self.initial_name = self.name
+        self.board = data.get('board', None)
+        self.task  = data.get('task', None)
         
-        self.detached = repository.get('detached', False)
-        self.board_task.load(repository)
+        self.detached = data.get('detached', False)
+        self.board_task.load(data)
         
-        for subject_name in repository.get('subjects', []):
+        for subject_name in data.get('subjects', []):
             self += self.project.find_subject(subject_name)
         
-
-        # load experiments
-        sessions_repo = repository.find('sessions')
-        if sessions_repo is not None:
-            for repo in sessions_repo.list():
+        sessionspath = os.path.join(self.path, 'sessions')
+        if os.path.exists(sessionspath):
+            for name in os.listdir(sessionspath):
+                if os.path.isfile( os.path.join(sessionspath, name) ): continue
                 session = self.create_session()
-                session.load(repo)
-
+                session.load( os.path.join(sessionspath, name) )
+        
         self._sessions = sorted(self.sessions, key=lambda x: x.started, reverse=True)

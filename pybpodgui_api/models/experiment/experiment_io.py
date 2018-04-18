@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, hashlib
+import logging, os, hashlib, shutil
 import pybpodgui_api
 
 from pybpodgui_api.models.experiment.experiment_base import ExperimentBase
@@ -18,8 +18,8 @@ class ExperimentIO(ExperimentBase):
     def __init__(self, project):
         super(ExperimentIO, self).__init__(project)
 
-        # repository that will manage the project files
-        self.repository = None
+        #initial name. Used to track if the name was updated
+        self.initial_name = None
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -35,7 +35,7 @@ class ExperimentIO(ExperimentBase):
 
         return data
 
-    def save(self, parent_repository):
+    def save(self):
         """
         Save experiment data on filesystem.
 
@@ -43,28 +43,34 @@ class ExperimentIO(ExperimentBase):
         :return: Dictionary containing the experiment info to save.  
         :rtype: dict
         """
-        # if the project was loaded then it will reuse the repository otherwise create a new repository ################################
-        repository = self.repository = self.repository if self.repository else parent_repository.sub_repository('experiments', self.name, uuid4=self.uuid4)
-        ################################################################################################################################
+        if not self.name:
+            logger.warning("Skipping experiment without name")
+        else:
+            if self.initial_name is not None:
+                initial_path = os.path.join(self.project.path, 'experiments', self.initial_name)
 
-        # save setups
-        for setup in self.setups: 
-            setup.save(repository)
-            sessions_repo = setup.repository.find('sessions')
-            if sessions_repo is not None: sessions_repo.commit()
+                if initial_path!=self.path:
+                    shutil.move( initial_path, self.path )
+                    #current_filepath = os.path.join(self.path, self.initial_name+'.json')
+                    #future_filepath  = os.path.join(self.path, self.name+'.json')
+                    #shutil.move( current_filepath, future_filepath )
+
+            
+            if not os.path.exists(self.path): os.makedirs(self.path)
+
+            self.initial_name = self.name
+
+            # save setups
+            for setup in self.setups: setup.save()
+
+            self.project.remove_non_existing_repositories(
+                os.path.join(self.path, 'setups'),
+                [setup.name for setup in self.setups]
+            )
         
-        repository.uuid4    = self.uuid4
-        repository.software = 'PyBpod GUI API v'+str(pybpodgui_api.__version__)
-        repository.def_url  = 'http://pybpod.readthedocs.org'
-        repository.def_text = 'This file contains information about a PyBpod gui experiment.'
-        repository.name     = self.name
         
-        repository.commit()
-
-        return repository
-
-
-    def load(self, repository):
+        
+    def load(self, path):
         """
         Load experiment data from filesystem
 
@@ -72,17 +78,19 @@ class ExperimentIO(ExperimentBase):
         :ivar dict data: data object that contains all experiment info
         :return: Dictionary with loaded experiment info.
         """       
-        self.repository = repository
+        self.name  = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
+        self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
         
-        self.uuid4= repository.uuid4 if repository.uuid4 else self.uuid4
-        self.name = repository.name
+        self.initial_name = self.name
         
-        setups_repos = repository.find('setups')
-        if setups_repos is not None:
-            for repo in setups_repos.list():
+        setupspath = os.path.join(self.path, 'setups')
+        if os.path.exists(setupspath):
+            for name in os.listdir(setupspath):
+                if os.path.isfile( os.path.join(setupspath, name) ): continue
                 setup = self.create_setup()
-                setup.load(repo)
-
+                setup.load( os.path.join(setupspath, name) )
         
 
 
