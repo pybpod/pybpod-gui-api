@@ -142,7 +142,7 @@ class BoardCom(BoardIO):
         # load bpod configuration template
         template      = os.path.join(os.path.dirname(__file__), 'run_settings_template.py')
         bpod_settings = open(template, 'r').read().format(
-            workspace_path  = session.path.encode('unicode_escape').decode(),
+            workspace_path  = os.path.abspath(session.path).encode('unicode_escape').decode(),
             serialport      = board.serial_port,
             bnp_ports       = ('BPOD_BNC_PORTS_ENABLED = {0}'.format(board.enabled_bncports)            if board.enabled_bncports else '') ,
             wired_ports     = ('BPOD_WIRED_PORTS_ENABLED = {0}'.format(board.enabled_wiredports)        if board.enabled_wiredports else '') ,
