@@ -119,7 +119,7 @@ class SessionIO(SessionBase):
 
                 if msg:
                     if isinstance(msg, SessionInfo):
-                        if   msg.infoname==Session.INFO_PROTOCOL_NAME:
+                        if   msg.infoname==Session.INFO_PYBPOD_SESSION_NAME:
                             self.task_name = msg.infovalue
 
                         elif msg.infoname==Session.INFO_CREATOR_NAME:
