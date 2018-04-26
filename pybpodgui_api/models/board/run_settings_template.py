@@ -19,7 +19,6 @@ PYBPOD_EXPERIMENT 	= '{experiment}'
 PYBPOD_BOARD 		= '{board}'
 PYBPOD_SETUP 		= '{setup}'
 PYBPOD_SESSION 		= '{session}'
-PYBPOD_SESSION_NAME = '{session_name}.csv'
 PYBPOD_SESSION_PATH = '{session_path}'
 PYBPOD_SUBJECTS 	= [{subjects}]
 
