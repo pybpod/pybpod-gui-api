@@ -27,17 +27,15 @@ class SetupCom(SetupBaseIO):
 	"""
 
 	#### SETUP STATUS CONSTANTS ####
-	STATUS_READY = 0
-	STATUS_BOARD_LOCKED = 1  # The setup is free but the board is busy
-	STATUS_INSTALLING_TASK = 2  # The setup is busy installing the board
-	STATUS_SYNCING_VARS = 3  # The setup is syncing variables
-	STATUS_RUNNING_TASK = 4  # The setup is busy running the task, but it cannot be stopped yet
-	STATUS_RUNNING_TASK_HANDLER = 5  # The setup is busy running the task, but it is possible to stopped it
-	STATUS_RUNNING_TASK_ABOUT_2_STOP = 6  # The setup is busy running the task, but it is about to stop it
+	STATUS_READY 		= 0
+	STATUS_BOARD_LOCKED = 1 # The setup is free but the board is busy
+	STATUS_RUNNING_TASK = 2 # The setup is busy running the task, but it cannot be stopped yet
+	
+
 
 	def __init__(self, experiment):
 		super(SetupCom, self).__init__(experiment)
-		self.status = SetupCom.STATUS_READY
+		self.status = self.STATUS_READY
 
 	##########################################################################
 	####### PROPERTIES #######################################################
@@ -51,13 +49,24 @@ class SetupCom(SetupBaseIO):
 	def status(self, value):
 		self._status = value
 
-		if value == SetupCom.STATUS_READY:
-			if hasattr(self, '_run_flag'): del self._run_flag
-
 	##########################################################################
 	####### FUNCTIONS ########################################################
 	##########################################################################
+	def stop_trial(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.stop_trial()
 
+	def stop_task(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.stop_task()
+
+	def pause_trial(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.pause_trial()
+
+	def resume_trial(self):
+		if self.status==self.STATUS_RUNNING_TASK:
+			self.board.resume_trial()
 
 	def run_task(self):
 		"""
@@ -77,11 +86,26 @@ class SetupCom(SetupBaseIO):
 			raise RunSetupError("Please assign a board and protocol first")
 
 		try:
+			# update the status of the setup
+			self.status = self.STATUS_RUNNING_TASK
+
 			session = self.create_session()
 
-			self._run_flag = self.board.run_task(session, self.board_task, self.path)
+			self._run_flag = self.board.run_task(
+				session, 
+				self.board_task, 
+				self.path, 
+				detached=self.detached
+			)
+
+			for s in self.subjects: s+=session
+			#we need this if we want to put the play button on the subject treenode's session correctly
+			self.project.update_ui()
+
 		except Exception as err:
 			logger.error(str(err), exc_info=True)
 			raise Exception("Unknown error found while running task. See log for more details.")
 
 	
+	
+

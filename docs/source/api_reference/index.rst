@@ -1,11 +1,15 @@
 *******************************
-:mod:`models`
+:mod:`API Models`
 *******************************
 
-.. module:: pybpodgui_plugin.models
-   :synopsis: entities
 
 .. toctree::
    :titlesonly:
 
-   project/project
+   models/board/board
+   models/experiment/experiment
+   models/project/project
+   models/session/session
+   models/setup/setup
+   models/subject/subject
+   models/task/task

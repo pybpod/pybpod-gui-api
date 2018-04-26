@@ -5,7 +5,7 @@
 A board represents the hardware that controls the running session for a specific setup.
 """
 
-import os
+import os, uuid
 import logging
 logger = logging.getLogger(__name__)
 
@@ -19,11 +19,14 @@ class BoardBase(object):
         """
         :ivar Project project: Project to which the Board belongs to.
         """
-        self.name = 'Untitled box {0}'.format(len(project.boards))
+        self.uuid4      = uuid.uuid4()
+        
+        self.name        = 'Untitled box {0}'.format(len(project.boards))
         self.serial_port = None
-        self.project = project
+        self.project     = project
+        self.net_port    = 36000+len(project.boards)
 
-        self._path = None
+        self.data         = None
         self.log_messages = []
 
         self.project += self
@@ -31,6 +34,10 @@ class BoardBase(object):
         self.enabled_bncports       = None
         self.enabled_wiredports     = None
         self.enabled_behaviorports  = None
+
+    def __add__(self, value):
+        self.log_messages.append(value)
+        return self
 
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -83,11 +90,10 @@ class BoardBase(object):
 
         :rtype: str
         """
-        return self._path
+        if self.project.path is None: return None
+        return os.path.join(self.project.path, 'boards',self.name)
 
-    @path.setter
-    def path(self, value):
-        self._path = value
+        
 
     @property
     def enabled_bncports(self):
@@ -124,6 +130,19 @@ class BoardBase(object):
 
     @enabled_behaviorports.setter
     def enabled_behaviorports(self, value): self._enabled_behaviorports = value
+
+    @property
+    def net_port(self):
+        """
+        Get and set the experiment name
+
+        :rtype: list(Boolean)
+        """
+        return self._net_port
+
+    @net_port.setter
+    def net_port(self, value): self._net_port = value
+
 
     ##########################################################################
     ####### FUNCTIONS ########################################################

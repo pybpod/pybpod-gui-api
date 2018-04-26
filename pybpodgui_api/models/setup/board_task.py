@@ -21,6 +21,7 @@ class BoardTask(object):
         self.board = None
         self.task  = None
         self.variables = []
+        self.update_variables = False
         
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -62,6 +63,19 @@ class BoardTask(object):
     @variables.setter
     def variables(self, value): self._variables = value
 
+    @property
+    def update_variables(self):
+        """
+        Get and set a flag that indicates if the variables should be updated
+        at the end of the session
+
+        :rtype: bool
+        """
+        return self._update_variables
+
+    @update_variables.setter
+    def update_variables(self, value): self._update_variables = value
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
@@ -78,7 +92,7 @@ class BoardTask(object):
         data.update({'variables': [var.collect_data({}) for var in self.variables]})
         return data
 
-    def save(self, setup_path):
+    def save(self):
         """
         Save board task data on filesystem.
 
@@ -86,18 +100,22 @@ class BoardTask(object):
         :return: Dictionary containing the board task info to save.  
         :rtype: dict
         """
-        return {'variables': [var.save(setup_path) for var in self.variables]}
+        return {
+            'variables': [var.save() for var in self.variables],
+            'update-variables': self.update_variables
+        }
 
-    def load(self, setup_path, data):
+    def load(self, data):
         """
         Load setup data from filesystem
 
         :ivar str setup_path: Path of the setup
         :ivar dict data: data object that contains all setup info
         """
-        for data in data.get('variables', []):
+        self.update_variables = data.get('update-variables', False)
+        for var_data in data.get('variables', []):
             var = self.create_variable()
-            var.load(setup_path, data)          
+            var.load(var_data)
 
 
     def __unicode__(self):

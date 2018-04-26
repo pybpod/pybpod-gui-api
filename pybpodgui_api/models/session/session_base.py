@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-import os, csv, datetime, logging, dateutil
+import os, csv, datetime, logging, dateutil, uuid
+from pathlib import Path
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
-from pybpodgui_api.com.messaging.msg_factory import parse_board_msg, BpodMessageParser
+from pybpodgui_api.com.messaging.parser import BpodMessageParser
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,12 @@ class SessionBase(object):
 
     def __init__(self, setup):
         setup += self
+        self.uuid4              = None # the session will only gain a uuid4 after the session is executed
+
+        self.data               = None
         self.setup              = setup
-        self.name               = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        self.path               = os.path.join(self.setup.path, "{0}.txt".format(self.name))
+        self.name               = self.__default_name(setup)
+        self.creator            = ''
         self.setup_name         = setup.name
         self.board_name         = setup.board.name if setup.board else None
         self.task_name          = setup.task.name if setup.task else None
@@ -28,42 +32,34 @@ class SessionBase(object):
         self.ended              = None
         self.messages_history   = []
         self.subjects           = []
+        self.filepath           = None
+        self.variables          = []
 
+        '''
+        for s in setup.subjects:
+            s+=self
+        '''
 
-    def open(self):
+    
+
+    def __default_name(self, setup):
+        return datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
         """
-        Open the csv file to write the session data
+        return '_'.join([
+            setup.experiment.name,
+            '+'.join([s.name for s in setup.subjects]),
+            setup.task.name if setup.task is not None else 'None',
+            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        ])
         """
-        self.csvfile    = open(self.path, 'w+', newline='\n', buffering=1)
-        self.csvwriter  = csv.writer(self.csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-
-    def close(self):
-        """
-        llose the session csv file
-        """
-        self.csvfile.close()
-
-    def log_msg(self, msg): 
-        """ 
-        Parses board output and creates new session history entry 
-
-        :ivar BaseMessage msg: message to be parsed 
-        """ 
-        parsed_messages = parse_board_msg(msg) 
-
-        for m in parsed_messages: 
-            if isinstance(m, SessionInfo) and m.infoname==Session.INFO_SESSION_ENDED:
-                self.ended = m.infovalue
-
-            self.csvwriter.writerow(m.tolist()) 
-            self.messages_history.append(m) 
-        
-        
 
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
 
+    def __add__(self, value):
+        self._messages_history.append(value)
+        return self
 
     def remove(self):
         """
@@ -71,8 +67,9 @@ class SessionBase(object):
 
         """
         pass
-    
 
+    
+    
     @property
     def setup(self):
         """
@@ -100,18 +97,44 @@ class SessionBase(object):
         self._name = value
 
     @property
+    def subjects(self):
+        """
+        Get and set session name
+
+        :rtype: str
+        """
+        return self._name
+
+    @subjects.setter
+    def subjects(self, value):
+        self._subjects = value
+
+    @property
     def path(self):
         """
         Get and set path name
 
         :rtype: str
         """
-        return self._path
+        if self.setup.path is None: return None
+        return os.path.join(self.setup.path, 'sessions',self.name)
 
-    @path.setter
-    def path(self, value):
-        self._path = value
+    @property
+    def filepath(self):
+        return self._filepath
 
+    @filepath.setter
+    def filepath(self, value):
+        self._filepath = value
+
+    @property
+    def variables(self):
+        return self._variables
+
+    @variables.setter
+    def variables(self, value):
+        self._variables = value
+    
     @property
     def setup_name(self):
         """
@@ -220,3 +243,8 @@ class SessionBase(object):
         :rtype: Task
         """
         return self.setup.task
+
+
+    @property
+    def is_running(self):
+        return self.status==self.STATUS_SESSION_RUNNING

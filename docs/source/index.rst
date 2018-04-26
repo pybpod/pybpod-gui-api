@@ -4,16 +4,22 @@
    contain the root `toctree` directive.
 
 **************************************
-Welcome to PyBpod's documentation!
+Welcome to PyBpod GUI API's documentation!
 **************************************
 
-.. note::
 
-   All examples and Bpod's state machine and communication logic were based on the original version made available by `Josh Sanders (Sanworks) <https://github.com/sanworks>`_.
+This **API** makes available a set of functions and properties to allow the manipulation of a `PyBpod GUI <http://pybpod.readthedocs.io>`_ project using code.
+
+Check the **how to > examples** section to learn how to use the API. 
 
 
+.. toctree::
+   :hidden:
+   :maxdepth: 4
+   :includehidden:
+   :caption: How to
 
-.. high level toc tree
+   howto/index
 
 
 .. toctree::

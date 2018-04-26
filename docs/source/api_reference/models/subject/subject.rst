@@ -1,21 +1,21 @@
 **********************************
-:mod:`subject`
+:mod:`models.subject`
 **********************************
-
-.. module:: pybpodgui_api.models.subject
-   :synopsis: Bpod API task
 
 --------
 Overview
 --------
 
-Enumerates Bpod board supported operations.
+Enumerates Bpod Subject supported operations.
 
 --------------
 Implementation
 --------------
 
 .. autoclass:: pybpodgui_api.models.subject.Subject
+    :members:
     :inherited-members:
-	:members:
-	:exclude-members: collect_data
+    :exclude-members:
+        collect_data
+    :undoc-members:
+

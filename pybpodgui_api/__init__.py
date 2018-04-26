@@ -6,7 +6,7 @@
 """
 
 import sys, os
-from pysettings import conf
+from pyforms import conf
 
 __version__ 	= "1.0"
 __author__  	= "Ricardo Jorge Vieira Ribeiro"
@@ -16,7 +16,7 @@ __maintainer__ 	= ["Ricardo Ribeiro", "Carlos Mão de Ferro"]
 __email__ 		= ["ricardojvr@gmail.com", "cajomferro@gmail.com"]
 __status__ 		= "Development"
 
-# Load settings using pysettings library
+# Load settings using pyforms library
 # Include user settings in case the file exists
 
 conf += 'pybpodgui_api.settings'

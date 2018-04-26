@@ -1,7 +1,8 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os
+import logging, os, uuid
+from .taskcommand import ExecCmd, ScriptCmd
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 
 logger = logging.getLogger(__name__)
@@ -13,11 +14,16 @@ class TaskBase(object):
         """
         :ivar Project project: Project to which the Task belongs to.
         """
-        self.name    = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
-        self.project = project
-        self.path    = None
-        self.project   += self
+        self.trigger_softcodes = False
+
+        self.uuid4    = uuid.uuid4()
+        self.filepath = None
+        self.project  = project
+        self.name     = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
+        self.project += self
         
+        self._commands = []
+
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
@@ -32,7 +38,22 @@ class TaskBase(object):
         return self._name
        
     @name.setter
-    def name(self, value): self._name = value
+    def name(self, value):
+        previous_name = self._name if hasattr(self, '_name') else None
+        previous_path = self.path if hasattr(self, '_name')  else None
+   
+        self._name    = value
+        if previous_path is not None and self.filepath is not None:
+            filepath = os.path.join(previous_path, self.name+'.py')
+            os.rename(self.filepath, filepath )
+
+            oldfilepath = os.path.join(previous_path, previous_name+'.json')
+            filepath    = os.path.join(previous_path, self.name+'.json')
+            if os.path.isfile(oldfilepath): os.rename(oldfilepath, filepath)
+
+            os.rename(previous_path, self.path)
+            self.filepath = os.path.join(self.path, self.name+'.py')
+
 
     @property
     def path(self): 
@@ -41,40 +62,23 @@ class TaskBase(object):
 
         :rtype: str
         """
-        return self._path
-
-    @path.setter
-    def path(self, value): 
-        self._path = value
+        if self.project.path is None: return None
+        return os.path.join(self.project.path, 'tasks', self.name)
 
     @property
-    def code(self):
+    def filepath(self):
         """
-        Get and set task code
+        Get and set task file path
 
         :rtype: str
         """
-        if not self.path or not os.path.exists(self.path):
-            raise FileNotFoundError("Task file not found!")
-        with open(self.path, "r") as file: return file.read()
-        return None
-    @code.setter
-    def code(self, value):
-        if not self.path or not os.path.exists(self.path):
-            tasks_path = os.path.join(self.project.path, 'tasks')
-            if not os.path.exists(tasks_path): os.makedirs(tasks_path)
+        return self._filepath
 
-            task_folder = os.path.join(tasks_path, self.name)
-            if not os.path.exists(task_folder): 
-                os.makedirs(task_folder)
+    @filepath.setter
+    def filepath(self, value):
+        self._filepath = value
 
-            initfile = os.path.join(task_folder, '__init__.py')
-            if not os.path.exists(initfile): 
-                with open(initfile, "w") as file: pass
-
-            self.path = os.path.join(task_folder, self.name)+'.py'
-        with open(self.path, "w") as file: file.write(value)
-
+    
     @property
     def project(self):          
         """
@@ -86,10 +90,70 @@ class TaskBase(object):
     @project.setter
     def project(self, project): self._project = project
 
-    
+
+    @property
+    def trigger_softcodes(self):
+        """
+        Get net port
+
+        :rtype: int
+        """
+        return self._trigger_softcodes
+
+    @trigger_softcodes.setter
+    def trigger_softcodes(self, value):
+        self._trigger_softcodes = value
+
+
+    @property
+    def commands(self):
+        """
+        Get commands
+
+        :rtype: list(TaskCommand)
+        """
+        return self._commands
+
+
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
+
+    def make_path(self):
+        """
+        Creates the task folder
+        """
+        tasks_path = os.path.join(self.project.path, 'tasks')
+        if not os.path.exists(tasks_path): os.makedirs(tasks_path)
+        if not os.path.exists(self.path):  os.makedirs(self.path)
+        open(os.path.join(self.path, '__init__.py'), 'w').close()
+
+    def make_emptyfile(self):
+        """
+        Creates the task folder if does not exists and an empty code file
+        """
+        self.make_path()
+        filepath = os.path.join(self.path, self.name+'.py')
+        open(filepath, 'w').close()
+        return filepath
+        
+
+
+    def create_scriptcmd(self):
+        return ScriptCmd(self)
+
+    def create_execcmd(self):
+        return ExecCmd(self)
+
+    def __add__(self, obj):     
+        if isinstance(obj, ScriptCmd): self._commands.append(obj)
+        if isinstance(obj, ExecCmd):   self._commands.append(obj)
+        return self
+
+    def __sub__(self, obj):
+        if isinstance(obj, ScriptCmd): self._commands.remove(obj)
+        if isinstance(obj, ExecCmd):   self._commands.remove(obj)
+        return self
 
     def remove(self):
         """

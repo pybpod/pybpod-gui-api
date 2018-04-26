@@ -4,11 +4,11 @@
 """ pycontrol.api.models.project
 
 """
-import logging
+import logging, uuid, os, shutil
 from pybpodgui_api.models.experiment import Experiment
-from pybpodgui_api.models.board         import Board
-from pybpodgui_api.models.task      import Task
-from pybpodgui_api.models.subject   import Subject
+from pybpodgui_api.models.board      import Board
+from pybpodgui_api.models.task       import Task
+from pybpodgui_api.models.subject    import Subject
 
 
 logger = logging.getLogger(__name__)
@@ -20,12 +20,13 @@ class ProjectBase(object):
     """
 
     def __init__(self):
+        self.uuid4      = uuid.uuid4()
         self.name           = ''
-        self.path           = None
         self._experiments   = []
         self._tasks         = []
         self._boards        = []
         self._subjects      = []
+        self._path          = None
 
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -97,6 +98,31 @@ class ProjectBase(object):
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
+    def import_task(self, filepath):
+        if self.path==None:
+            raise Exception('The project has to be saved first')
+
+        filename, file_extension = os.path.splitext(os.path.basename(filepath))
+        
+        # check if there are any existing task with the same name
+        if self.find_task(filename) is not None:
+            raise Exception(
+                """There is already a task named [{}].The import was aborted""".format(filename),
+            )
+        ###########################################################
+
+        # create the task, folder, and copy the files
+        task      = self.create_task()
+        task.name = filename
+        task.make_path()
+        new_filepath  = os.path.join(task.path, task.name+'.py')
+        task.filepath = new_filepath
+        shutil.copy(filepath, new_filepath)
+        ###########################################################
+
+        return task
+
+
     def __add__(self, obj):     
         if isinstance(obj, Experiment): self._experiments.append(obj)
         if isinstance(obj, Board):      self._boards.append(obj)
@@ -142,6 +168,25 @@ class ProjectBase(object):
         """
         for subject in self.subjects:
             if subject.name == name: return subject
+        return None
+
+    def find_subject_by_id(self, uuid4):
+        """
+        Find a subject by the name
+
+        :ivar str name: Name of the subject to find.
+        :rtype: Subject
+        """
+        for subject in self.subjects:
+            if subject.uuid4 == uuid4: return subject
+        return None
+
+    def find_session(self, uuid4):
+        for experiment in self.experiments:
+            for setup in experiment.setups:
+                for session in setup.sessions:
+                    if session.uuid4 == uuid4:
+                        return session
         return None
 
     def create_experiment(self):

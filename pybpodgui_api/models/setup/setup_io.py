@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os, json, glob, hashlib
+import os, glob, hashlib, shutil
+import pybpodgui_api
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 from pybpodgui_api.models.setup.setup_base import SetupBase
+
+from sca.formats import json
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,11 @@ class SetupBaseIO(SetupBase):
 
     def __init__(self, experiment):
         super(SetupBaseIO, self).__init__(experiment)
+
+        #initial name. Used to track if the name was updated
+        self.initial_name = None
+
+
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -26,7 +34,7 @@ class SetupBaseIO(SetupBase):
         return data
 
 
-    def save(self, parent_path):
+    def save(self):
         """
         Save setup data on filesystem.
 
@@ -37,86 +45,78 @@ class SetupBaseIO(SetupBase):
         if not self.name:
             logger.warning("Skipping setup without name")
         else:
-            setups_path = self.__generate_setups_path(experiment_path=parent_path)
-            if not os.path.exists(setups_path):
-                os.makedirs(setups_path)
 
-            setup_path = self.__generate_setup_path(setups_path)
-            if not os.path.exists(setup_path):
-                os.makedirs(setup_path)
+            if self.initial_name is not None:
+                initial_path = os.path.join(self.experiment.path, 'setups', self.initial_name)
 
-            # collect board_task data
-            board_task_data = self.board_task.save(parent_path)
+                if initial_path!=self.path:
+                    shutil.move( initial_path, self.path )
+                    current_filepath = os.path.join(self.path, self.initial_name+'.json')
+                    future_filepath  = os.path.join(self.path, self.name+'.json')
+                    shutil.move( current_filepath, future_filepath )
+            
+            if not os.path.exists(self.path): os.makedirs(self.path)
 
             # save sessions
-            for session in self.sessions:
-                session.save(setup_path)
+            for session in self.sessions: session.save()
 
-            data2save = {}
-            data2save.update({'name': self.name})
-            data2save.update({'board': self.board.name if self.board else None})
-            data2save.update({'subjects': [subject.name for subject in self.subjects]})
-            data2save.update(board_task_data)
+            self.project.remove_non_existing_repositories(
+                os.path.join(self.path, 'sessions'),
+                [session.name for session in self.sessions]
+            )
+            
+            data = json.scadict(
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url ='http://pybpod.readthedocs.org',
+                def_text='This file contains information about a PyBpod experiment setup.'
+            )
+            data['board']     = self.board.name if self.board else None
+            data['task']      = self.task.name if self.task else None
+            data['subjects']  = [subject.name for subject in self.subjects]
+            data['detached']  = self.detached
+            data.update( self.board_task.save() ) # collect board_task data
+            
+            if self.board:                data.add_external_ref(self.board.uuid4)
+            for subject in self.subjects: data.add_external_ref(subject.uuid4)
 
-            self.__clean_sessions_path(setup_path)
+            config_path = os.path.join(self.path, self.name+'.json')
+            with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
-            self.__save_on_file(data2save, dest_path=setup_path, filename='setup-settings.json')
+            self.initial_name = self.name
 
-            self.path = setup_path
+            
 
-            return data2save
 
-    def load(self, setup_path, data):
+
+
+    def load(self, path):
         """
         Load setup data from filesystem
 
         :ivar str setup_path: Path of the setup
         :ivar dict data: data object that contains all setup info
         """
-        settings_path = os.path.join(setup_path, 'setup-settings.json')
-        self.path = setup_path
+        self.name  = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
+        self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
 
-        with open(settings_path, 'r') as output_file:
-            data = json.load(output_file)
-            self.name  = data['name']
-            self.board = data.get('board', None)
-            for subject_name in data.get('subjects', []):
-                self += self.project.find_subject(subject_name)
-
-            self.board_task.load(setup_path, data)
-
-        for filepath in self.__list_all_sessions_in_folder(setup_path):
-            session = self.create_session()
-            session.load(filepath, {})
-
-        self._sessions = sorted(self.sessions, key=lambda x: x.started)
-
-    def __save_on_file(self, data2save, dest_path, filename):
-        """
-        Dump data on file
-        :param data2save:
-        :param dest_path:
-        :param filename:
-        """
-        settings_path = os.path.join(dest_path, filename)
-        with open(settings_path, 'w') as output_file:
-            json.dump(data2save, output_file, sort_keys=False, indent=4, separators=(',', ':'))
-
-    def __clean_sessions_path(self, setup_path):
-        """
-        Remove from the sessions file the unused session files
-        """
-        sessions_paths = [session.path for session in self.sessions]
-        for path in self.__list_all_sessions_in_folder(setup_path):
-            if path not in sessions_paths:
-                send2trash(path)
-
-    def __generate_setups_path(self, experiment_path):
-        return os.path.join(experiment_path, 'setups')
-
-    def __generate_setup_path(self, setups_path):
-        return os.path.join(setups_path, self.name)
-
-    def __list_all_sessions_in_folder(self, setup_path):
-        search_4_files_path = os.path.join(setup_path, '*.txt')
-        return sorted(glob.glob(search_4_files_path))
+        self.initial_name = self.name
+        self.board = data.get('board', None)
+        self.task  = data.get('task', None)
+        
+        self.detached = data.get('detached', False)
+        self.board_task.load(data)
+        
+        for subject_name in data.get('subjects', []):
+            self += self.project.find_subject(subject_name)
+        
+        sessionspath = os.path.join(self.path, 'sessions')
+        if os.path.exists(sessionspath):
+            for name in os.listdir(sessionspath):
+                if os.path.isfile( os.path.join(sessionspath, name) ): continue
+                session = self.create_session()
+                session.load( os.path.join(sessionspath, name) )
+        
+        self._sessions = sorted(self.sessions, key=lambda x: x.started, reverse=True)

@@ -1,9 +1,12 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, json, hashlib
-from pybpodgui_api.utils.send2trash_wrapper import send2trash
+import logging, os, hashlib, shutil
+import pybpodgui_api
+
 from pybpodgui_api.models.experiment.experiment_base import ExperimentBase
+
+from sca.formats import json
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +15,11 @@ class ExperimentIO(ExperimentBase):
     """
     Save and Load actions for Experiment
     """
-
     def __init__(self, project):
         super(ExperimentIO, self).__init__(project)
+
+        #initial name. Used to track if the name was updated
+        self.initial_name = None
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -22,7 +27,7 @@ class ExperimentIO(ExperimentBase):
 
     def collect_data(self, data):
         data.update({'name': self.name})
-        data.update({'task': self.task.name if self.task else None})
+        #data.update({'task': self.task.name if self.task else None})
         data.update({'setups': []})
 
         for setup in self.setups:
@@ -30,7 +35,7 @@ class ExperimentIO(ExperimentBase):
 
         return data
 
-    def save(self, parent_path):
+    def save(self):
         """
         Save experiment data on filesystem.
 
@@ -38,65 +43,57 @@ class ExperimentIO(ExperimentBase):
         :return: Dictionary containing the experiment info to save.  
         :rtype: dict
         """
-        experiments_path = self.__generate_experiments_path(parent_path)
-        if not os.path.exists(experiments_path):
-            os.makedirs(experiments_path)
+        if not self.name:
+            logger.warning("Skipping experiment without name")
+        else:
+            if self.initial_name is not None:
+                initial_path = os.path.join(self.project.path, 'experiments', self.initial_name)
 
-        experiment_path = self.__generate_experiment_path(experiments_path)
-        if not os.path.exists(experiment_path):
-            os.makedirs(experiment_path)
+                if initial_path!=self.path:
+                    shutil.move( initial_path, self.path )
+                    #current_filepath = os.path.join(self.path, self.initial_name+'.json')
+                    #future_filepath  = os.path.join(self.path, self.name+'.json')
+                    #shutil.move( current_filepath, future_filepath )
 
-        # save setups
-        for setup in self.setups:
-            setup.save(parent_path=experiment_path)
+            
+            if not os.path.exists(self.path): os.makedirs(self.path)
 
-        data2save = {
-            'name': self.name,
-            'task': self.task.name if self.task else None
-        }
+            self.initial_name = self.name
 
-        self.path = experiment_path
+            # save setups
+            for setup in self.setups: setup.save()
 
-        self.__clean_setups_path(experiment_path)  # call only after update setups
-
-        self.__save_on_file(data2save, dest_path=experiment_path, filename='experiment-settings.json')
-
-        return data2save
-
-    def load(self, experiment_path, data):
+            self.project.remove_non_existing_repositories(
+                os.path.join(self.path, 'setups'),
+                [setup.name for setup in self.setups]
+            )
+        
+        
+        
+    def load(self, path):
         """
         Load experiment data from filesystem
 
         :ivar str experiment_path: Path of the experiment
         :ivar dict data: data object that contains all experiment info
         :return: Dictionary with loaded experiment info.
-        :rtype: dict
-        """
-        settings_path = os.path.join(experiment_path, 'experiment-settings.json')
-        with open(settings_path, 'r') as output_file:
-            data = json.load(output_file)
-
-            self.name = data['name']
-            self.task = data.get('task', None)
-
-            for path in self.__list_all_setups_in_folder(experiment_path):
+        """       
+        self.name  = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
+        self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
+        
+        self.initial_name = self.name
+        
+        setupspath = os.path.join(self.path, 'setups')
+        if os.path.exists(setupspath):
+            for name in os.listdir(setupspath):
+                if os.path.isfile( os.path.join(setupspath, name) ): continue
                 setup = self.create_setup()
-                setup.load(path, {})
+                setup.load( os.path.join(setupspath, name) )
+        
 
-            self.path = experiment_path
 
-        return data
-
-    def __save_on_file(self, data2save, dest_path, filename):
-        """
-        Dump data on file
-        :param data2save:
-        :param dest_path:
-        :param filename:
-        """
-        settings_path = os.path.join(dest_path, filename)
-        with open(settings_path, 'w') as output_file:
-            json.dump(data2save, output_file, sort_keys=False, indent=4, separators=(',', ':'))
 
     def __clean_setups_path(self, experiment_path):
         # remove from the setups directory the unused setup files

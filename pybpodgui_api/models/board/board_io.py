@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-import logging, json
+import logging
+import pybpodgui_api
 from pybpodgui_api.models.board.board_base import BoardBase
+from sca.formats import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +18,8 @@ class BoardIO(BoardBase):
 
     def __init__(self, project):
         super(BoardIO, self).__init__(project)
-    
+
+        
     ##########################################################################
     ####### FUNCTIONS ########################################################
     ##########################################################################
@@ -26,7 +30,7 @@ class BoardIO(BoardBase):
 
         return data
 
-    def save(self, parent_path):
+    def save(self):
         """
         Save experiment data on filesystem.
 
@@ -38,62 +42,44 @@ class BoardIO(BoardBase):
             logger.warning("Skipping board without name")
             return None
         else:
-            boards_path = self.__generate_boards_path(parent_path)
-            if not os.path.exists(boards_path):
-                os.makedirs(boards_path)
+            if not os.path.exists(self.path): os.makedirs(self.path)
 
-            board_path = self.__generate_board_path(boards_path)
-            if not os.path.exists(board_path):
-                os.makedirs(board_path)
+            data = json.scadict(
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url ='http://pybpod.readthedocs.org',
+                def_text='This file contains the configuration of Bpod board.'
+            )
+            data['serial-port']           = self.serial_port
+            data['enabled-bncports']      = self.enabled_bncports
+            data['enabled-wiredports']    = self.enabled_wiredports
+            data['enabled-behaviorports'] = self.enabled_behaviorports
+            data['net-port']              = self.net_port
+            
+            config_path = os.path.join(self.path, self.name+'.json')
+            with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
-            data2save = {
-                'name':                     self.name,
-                'serial_port':              self.serial_port,
-                'enabled-bncports':         self.enabled_bncports,
-                'enabled-wiredports':       self.enabled_wiredports,
-                'enabled-behaviorports':    self.enabled_behaviorports,
-            }
-
-            self.__save_on_file(data2save, board_path, 'board-settings.json')
-
-            self.path = board_path
-
-            return data2save
-
-    def load(self, board_path, data):
+    def load(self, path):
         """
         Load board data from filesystem
 
         :ivar str board_path: Path of the board
         :ivar dict data: data object that contains all board info
         """
-        settings_path = os.path.join(board_path, 'board-settings.json')
-        with open(settings_path, 'r') as output_file:
-            data = json.load(output_file)
-            
-            self.name        = data['name']
-            self.serial_port = data['serial_port']
-            self._path       = board_path
+        self.name = os.path.basename(path)
+        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+            data = json.load(stream)
 
-            self.enabled_bncports       = data.get('enabled-bncports',      None)
-            self.enabled_wiredports     = data.get('enabled-wiredports',    None)
-            self.enabled_behaviorports = data.get('enabled-behaviorports', None)
+        self.uuid4                  = data.uuid4 if data.uuid4 else self.uuid4
+        self.serial_port            = data.get('serial-port',           data.get('serial_port', None) )
+        self.enabled_bncports       = data.get('enabled-bncports',      None)
+        self.enabled_wiredports     = data.get('enabled-wiredports',    None)
+        self.enabled_behaviorports  = data.get('enabled-behaviorports', None)
+        self.net_port               = data.get('net-port', None)
 
-            
 
     def __generate_boards_path(self, project_path):
         return os.path.join(project_path, 'boards')
 
     def __generate_board_path(self, boards_path):
         return os.path.join(boards_path, self.name)
-
-    def __save_on_file(self, data2save, dest_path, filename):
-        """
-        Dump data on file
-        :param data2save:
-        :param dest_path:
-        :param filename:
-        """
-        settings_path = os.path.join(dest_path, filename)
-        with open(settings_path, 'w') as output_file:
-            json.dump(data2save, output_file, sort_keys=False, indent=4, separators=(',', ':'))

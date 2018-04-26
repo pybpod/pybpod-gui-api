@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os
+import logging, os, uuid
 from pybpodgui_api.models.setup.board_task import BoardTask
 from pybpodgui_api.models.session import Session
 from pybpodgui_api.models.subject import Subject
@@ -16,23 +16,17 @@ class SetupBase(object):
         """
         :ivar Experiment experiment: Experiment to which the Setup belongs to
         """
+        self.uuid4    = uuid.uuid4()
+        self.name     = "Untitled setup {0}".format(len(experiment.setups))
+        self.detached = False
+        
         self.experiment = experiment
         self.board_task = self.create_board_task()
 
-        setup_path = None
-        if experiment.path is not None:
-            setups_path = os.path.join(experiment.path, 'setups')
-            if not os.path.exists(setups_path): os.makedirs(setups_path)
-
-            setup_path = os.path.join(setups_path, self.name)
-            if not os.path.exists(setup_path): os.makedirs(setup_path)
-
-        self.name = "Untitled box {0}".format(len(self.experiment.setups))
         self._sessions = []
         self._subjects = []
-        self.path   = setup_path
         self.board  = None
-        self.task   = self.experiment.task
+        self.task   = None
 
         self.experiment += self
 
@@ -63,6 +57,9 @@ class SetupBase(object):
         :rtype: list(Subject)
         """
         return self._subjects
+
+    
+    
 
     @property
     def board(self):
@@ -115,6 +112,13 @@ class SetupBase(object):
         return self.experiment.project
 
     @property
+    def detached(self):
+        return self._detached
+    @detached.setter
+    def detached(self, value):
+        self._detached = value
+
+    @property
     def sessions(self):
         """
         Get the list of sessions
@@ -130,11 +134,8 @@ class SetupBase(object):
 
         :rtype: str
         """
-        return self._path
-
-    @path.setter
-    def path(self, value):
-        self._path = value
+        if self.experiment.path is None: return None
+        return os.path.join(self.experiment.path, 'setups', self.name)
 
     @property
     def last_session(self):
@@ -148,6 +149,20 @@ class SetupBase(object):
             return order_sessions[-1]
         except IndexError as err:
             return None
+
+    @property
+    def net_port(self):
+        if self.task and self.board:
+            if self.task.trigger_softcodes:
+                return self.board.net_port
+            else:
+                return None
+        else:
+            return None
+
+    @property
+    def update_variables(self):
+        return self.board_task.update_variables
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -175,6 +190,10 @@ class SetupBase(object):
         """
         return Session(self)
 
+    def clear_subjects(self):
+        for subj in self.subjects:
+            self -= subj
+
     def __unicode__(self):
         return self.name
 
@@ -187,6 +206,8 @@ class SetupBase(object):
         return self
 
     def __sub__(self, obj):
-        if isinstance(obj, Session): self._sessions.remove(obj)
-        if isinstance(obj, Subject): self._subjects.remove(obj)
+        if isinstance(obj, Session) and obj in self._sessions:
+            self._sessions.remove(obj)
+        if isinstance(obj, Subject) and obj in self._subjects:
+            self._subjects.remove(obj)
         return self
