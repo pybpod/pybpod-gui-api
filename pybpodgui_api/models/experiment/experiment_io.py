@@ -79,9 +79,9 @@ class ExperimentIO(ExperimentBase):
         :return: Dictionary with loaded experiment info.
         """       
         self.name  = os.path.basename(path)
-        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-            data = json.load(stream)
-        self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
+        #with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+        #    data = json.load(stream)
+        #self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
         
         self.initial_name = self.name
         
