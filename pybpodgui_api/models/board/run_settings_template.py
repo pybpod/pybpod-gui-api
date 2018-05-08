@@ -1,5 +1,3 @@
-import json
-
 SETTINGS_PRIORITY = 0
 
 SERIAL_PORT       = '{serialport}'
@@ -22,7 +20,7 @@ PYBPOD_BOARD 		= '{board}'
 PYBPOD_SETUP 		= '{setup}'
 PYBPOD_SESSION 		= '{session}'
 PYBPOD_SESSION_PATH = '{session_path}'
-PYBPOD_SUBJECTS 	= json.dump([{subjects}])
+PYBPOD_SUBJECTS 	= [{subjects}]
 
 #import logging
 #PYBPOD_API_LOG_LEVEL = logging.DEBUG
