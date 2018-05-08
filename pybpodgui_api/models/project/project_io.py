@@ -21,6 +21,7 @@ class ProjectIO(ProjectBase):
         super(ProjectIO, self).__init__()
 
         self.data_hash  = None
+        self.data = None
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -36,7 +37,7 @@ class ProjectIO(ProjectBase):
         self.path = project_path
 
         with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-            data = json.load(stream)
+            self.data = data = json.load(stream)
 
         self.uuid4= data.uuid4 if data.uuid4 else self.uuid4
 
@@ -127,14 +128,19 @@ class ProjectIO(ProjectBase):
 
         ########### SAVE THE PROJECT ############
 
-        data = json.scadict(
-            uuid4_id=self.uuid4,
-            software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-            def_url ='http://pybpod.readthedocs.org',
-            def_text='This file contains information about a PyBpod project.'
-        )
-        
-        config_path = os.path.join(self.path, self.name+'.json')
+        if self.data:
+            data = self.data
+        else:
+            data = json.scadict(
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url ='http://pybpod.readthedocs.org',
+                def_text='This file contains information about a PyBpod project.'
+            )
+        data['name'] = self.name
+
+        name = os.path.basename(self.path)
+        config_path = os.path.join(self.path, name+'.json')
         with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
         self.data_hash = self.__generate_project_hash()

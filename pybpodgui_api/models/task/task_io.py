@@ -16,6 +16,7 @@ class TaskIO(TaskBase):
     def __init__(self, project=None):
         super(TaskIO, self).__init__(project)
 
+        self.data = None
         
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -49,12 +50,15 @@ class TaskIO(TaskBase):
             shutil.move( current_filepath, future_filepath )
         """
 
-        data = json.scadict(
-            uuid4_id=self.uuid4,
-            software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-            def_url ='http://pybpod.readthedocs.org',
-            def_text='This file contains information about a PyBpod protocol.'
-        )
+        if self.data:
+            data = self.data
+        else:
+            data = json.scadict(
+                uuid4_id=self.uuid4,
+                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                def_url ='http://pybpod.readthedocs.org',
+                def_text='This file contains information about a PyBpod protocol.'
+            )
         data['name']              = self.name
         data['trigger-softcodes'] = self.trigger_softcodes
         data['commands']          = [cmd.save() for cmd in self.commands]
@@ -72,7 +76,8 @@ class TaskIO(TaskBase):
         """
         self.name     = os.path.basename(path)
         with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-            data = json.load(stream)
+            self.data = data = json.load(stream)
+        
         self.uuid4    = data.uuid4 if data.uuid4 else self.uuid4
         self.filepath = os.path.join(self.path, self.name+'.py')
 

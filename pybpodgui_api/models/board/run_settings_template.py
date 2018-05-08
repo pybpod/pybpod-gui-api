@@ -13,6 +13,7 @@ PYBPOD_API_LOG_FILE  = None
 PYBPOD_API_STREAM2STDOUT = {stream2stdout}
 PYBPOD_API_ACCEPT_STDIN  = True
 
+PYBPOD_PROTOCOL 	= '{protocolname}'
 PYBPOD_CREATOR 		= ''
 PYBPOD_PROJECT 		= '{project}'
 PYBPOD_EXPERIMENT 	= '{experiment}'
