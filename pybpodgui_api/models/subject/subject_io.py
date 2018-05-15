@@ -60,7 +60,12 @@ class SubjectIO(SubjectBase):
         :ivar dict data: data object that contains all subject info
         """
         self.name  = os.path.basename(path)
-        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-            self.data = data = json.load(stream)
-        self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
+
+        try:
+            with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+                self.data = data = json.load(stream)
+            self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
+        except:
+            raise Exception('There was an error loading the configuration file for the subject [{0}]')
+            
     

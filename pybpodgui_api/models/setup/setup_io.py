@@ -120,7 +120,7 @@ class SetupBaseIO(SetupBase):
         
         sessionspath = os.path.join(self.path, 'sessions')
         if os.path.exists(sessionspath):
-            for name in os.listdir(sessionspath):
+            for name in sorted(os.listdir(sessionspath)):
                 if os.path.isfile( os.path.join(sessionspath, name) ): continue
                 session = self.create_session()
                 session.load( os.path.join(sessionspath, name) )

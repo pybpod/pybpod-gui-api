@@ -1,7 +1,7 @@
 SETTINGS_PRIORITY = 0
 
-SERIAL_PORT       = '{serialport}'
-NET_PORT          = {netport}
+PYBPOD_SERIAL_PORT       = '{serialport}'
+PYBPOD_NET_PORT          = {netport}
 
 {bnp_ports}
 {wired_ports}
