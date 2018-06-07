@@ -83,12 +83,14 @@ class SessionIO(SessionBase):
         nrows = csv.reader.count_metadata_rows(self.filepath)
         
         with open(self.filepath) as filestream:
+            
             self.data = pd.read_csv(filestream, 
                 delimiter=csv.CSV_DELIMITER, 
                 quotechar=csv.CSV_QUOTECHAR, 
                 quoting=csv.CSV_QUOTING,
                 lineterminator=csv.CSV_LINETERMINATOR,
-                skiprows=nrows
+                skiprows=nrows,
+                memory_map=True
             )
 
         res = self.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED) )
