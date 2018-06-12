@@ -11,3 +11,7 @@ APP_LOG_HANDLER_FILE_LEVEL 		= logging.WARNING
 # BPOD GUI PLUGIN SETTINGS
 APP_LOG_HANDLER_FILE_LEVEL 		= logging.WARNING
 APP_LOG_HANDLER_CONSOLE_LEVEL 	= logging.WARNING
+
+
+# [project], [experiment], [setup], [protocol], [datetime], [subjects]
+PYBPODGUI_API_DEFAULT_SESSION_NAME = "[datetime]"
