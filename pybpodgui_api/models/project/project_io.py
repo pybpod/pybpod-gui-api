@@ -42,8 +42,6 @@ class ProjectIO(ProjectBase):
         self.uuid4= data.uuid4 if data.uuid4 else self.uuid4
 
         
-        
-        
         logger.debug("==== LOAD TASKS ====")
 
         #load tasks
@@ -96,6 +94,9 @@ class ProjectIO(ProjectBase):
         :param str project_path: path to project
         :return: project data saved on settings file
         """
+
+        if project_path is not None: self.path=project_path
+
         logger.debug("saving project path: %s",  project_path)
         logger.debug("current project name: %s", self.name)
         logger.debug("current project path: %s", self.path)

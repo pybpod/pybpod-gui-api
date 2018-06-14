@@ -74,13 +74,17 @@ class TaskIO(TaskBase):
         :ivar str task_path: Path of the task
         :ivar dict data: data object that contains all task info
         """
-        self.name     = os.path.basename(path)
-        with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-            self.data = data = json.load(stream)
-        
-        self.uuid4    = data.uuid4 if data.uuid4 else self.uuid4
-        self.filepath = os.path.join(self.path, self.name+'.py')
+        self.name = os.path.basename(path)
 
+        config_path = os.path.join(self.path, self.name+'.json')
+        if os.path.exists(config_path):
+            with open( config_path, 'r' ) as stream:
+                self.data = data = json.load(stream)
+                self.uuid4    = data.uuid4 if data.uuid4 else self.uuid4
+                self.filepath = os.path.join(self.path, self.name+'.py')
+        else:
+            self.data = data = {}
+        
         self.trigger_softcodes = data.get('trigger-softcodes', None)
 
         for cmddata in data.get('commands', []):
