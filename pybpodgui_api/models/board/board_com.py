@@ -157,6 +157,7 @@ class BoardCom(BoardIO):
             protocolname    = board_task.task.name,
             session_path    = os.path.abspath(session.path).encode('unicode_escape').decode(),
             subjects        = ','.join( list(map(lambda x: '"'+str(x)+'"', session.subjects)) ),
+            user            = session.user.uuid4 if session.user.uuid4 else None,
             variables_names = ','.join(["'"+var.name+"'" for var in board_task.variables])
         )
 

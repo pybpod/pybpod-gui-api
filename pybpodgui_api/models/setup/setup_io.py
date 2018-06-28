@@ -93,9 +93,6 @@ class SetupBaseIO(SetupBase):
 
             
 
-
-
-
     def load(self, path):
         """
         Load setup data from filesystem

@@ -14,7 +14,7 @@ PYBPOD_API_STREAM2STDOUT = {stream2stdout}
 PYBPOD_API_ACCEPT_STDIN  = True
 
 PYBPOD_PROTOCOL 	= '{protocolname}'
-PYBPOD_CREATOR 		= ''
+PYBPOD_CREATOR 		= '{user}'
 PYBPOD_PROJECT 		= '{project}'
 PYBPOD_EXPERIMENT 	= '{experiment}'
 PYBPOD_BOARD 		= '{board}'

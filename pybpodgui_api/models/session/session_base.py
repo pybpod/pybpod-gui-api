@@ -35,6 +35,7 @@ class SessionBase(object):
         self.subjects           = []
         self.filepath           = None
         self.variables          = []
+        self.user               = None
 
 
     def __default_name(self, setup):

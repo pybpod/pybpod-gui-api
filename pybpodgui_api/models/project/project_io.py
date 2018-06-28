@@ -41,6 +41,14 @@ class ProjectIO(ProjectBase):
 
         self.uuid4= data.uuid4 if data.uuid4 else self.uuid4
 
+        logger.debug('=== LOAD USERS ===')
+        userspath = os.path.join(self.path, 'users')
+        if os.path.exists(userspath):
+            for name in os.listdir(userspath):
+                if os.path.isfile(os.path.join(userspath, name)): continue
+                user = self.create_user()
+                user.load( os.path.join(userspath, name))
+        
         
         logger.debug("==== LOAD TASKS ====")
 
@@ -100,6 +108,12 @@ class ProjectIO(ProjectBase):
         logger.debug("saving project path: %s",  project_path)
         logger.debug("current project name: %s", self.name)
         logger.debug("current project path: %s", self.path)
+
+        ########### SAVE THE USERS ############
+        userspath = os.path.join(self.path, 'users')
+        if not os.path.exists(userspath): os.makedirs(userspath)
+        for user in self.users: user.save()
+        self.remove_non_existing_repositories(userspath, [user.name for user in self.users])
 
         ########### SAVE THE TASKS ############
         taskspath  = os.path.join(self.path, 'tasks')
