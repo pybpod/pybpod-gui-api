@@ -52,6 +52,18 @@ class SubjectIO(SubjectBase):
             config_path = os.path.join(self.path, self.name+'.json')
             with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
+    def toJSON(self):
+        data = json.scadict(
+                    uuid4_id=self.uuid4,
+                    software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                    def_url ='http://pybpod.readthedocs.org',
+                    def_text='This file contains information about a subject used on PyBpod GUI.',
+                )
+        data['name'] = self.name
+        data['uuid4'] = self.uuid4
+        
+        return json.dumps(data)
+
     def load(self, path):
         """
         Load sebject data from filesystem

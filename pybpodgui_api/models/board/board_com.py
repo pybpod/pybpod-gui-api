@@ -13,6 +13,7 @@ import sys
 import pickle
 import base64
 import marshal
+import json
 import pandas as pd
 
 from AnyQt.QtCore import QTimer
@@ -129,8 +130,18 @@ class BoardCom(BoardIO):
         """
         session.subjects = [str([s.name, str(s.uuid4)]) for s in board_task.setup.subjects]
 
+        xt_user = ''
+        xt_subject = ''
+        if hasattr(conf,'PYBPOD_EXTRA_INFO'):
+            if 'Users' in conf.PYBPOD_EXTRA_INFO:
+                xt_user = session.user.toJSON()
+            if 'Subjects' in conf.PYBPOD_EXTRA_INFO:
+                xt_subject = []
+                for sbj in board_task.setup.subjects:
+                    xt_subject.append(sbj.toJSON())
+
         self._running_detached  = detached
-        self._running_boardtask = board_task 
+        self._running_boardtask = board_task
         self._running_task      = board_task.task
         self._running_session   = session
         
@@ -157,7 +168,9 @@ class BoardCom(BoardIO):
             protocolname    = board_task.task.name,
             session_path    = os.path.abspath(session.path).encode('unicode_escape').decode(),
             subjects        = ','.join( list(map(lambda x: '"'+str(x)+'"', session.subjects)) ),
-            user            = session.user.uuid4 if session.user.uuid4 else None,
+            user            = json.dumps([session.user.name, session.user.uuid4, session.user.connection] if session.user.uuid4 else None),
+            subject_extra   = ','.join( list(map(lambda x: '"'+str(x)+'"', xt_subject)) ),
+            user_extra      = xt_user,
             variables_names = ','.join(["'"+var.name+"'" for var in board_task.variables])
         )
 

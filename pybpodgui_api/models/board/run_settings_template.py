@@ -22,6 +22,9 @@ PYBPOD_SETUP 		= '{setup}'
 PYBPOD_SESSION 		= '{session}'
 PYBPOD_SESSION_PATH = '{session_path}'
 PYBPOD_SUBJECTS 	= [{subjects}]
+PYBPOD_SUBJECT_EXTRA = '{subject_extra}'
+PYBPOD_USER_EXTRA = '{user_extra}'
+
 
 #import logging
 #PYBPOD_API_LOG_LEVEL = logging.DEBUG
