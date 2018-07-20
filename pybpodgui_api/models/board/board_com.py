@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import datetime, dateutil
+import dateutil, traceback
 import logging
 import os
 import ntpath
@@ -188,7 +188,11 @@ class BoardCom(BoardIO):
         ## Execute the PRE commands ################################### 
         for cmd in board_task.task.commands:
             if cmd.when==0:
-                cmd.execute(session=session)
+                try:
+                    cmd.execute(session=session)
+                except Exception as err:
+                    traceback.print_exc()
+                    self.alert(str(err), "Unexpected error when executing a pre-command.")
         ############################################################### 
 
         task = board_task.task
@@ -273,7 +277,13 @@ class BoardCom(BoardIO):
 
         ## Execute the POST commands ################################## 
         for cmd in self._running_task.commands:
-            if cmd.when==1: cmd.execute(session=session)
+            if cmd.when==1:
+                try:
+                    cmd.execute(session=session)
+                except Exception as err:
+                    traceback.print_exc()
+                    self.alert(str(err), "Unexpected error when executing the post-command" )
+
         ############################################################### 
 
         self.status = self.STATUS_READY
