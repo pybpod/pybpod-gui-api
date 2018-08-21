@@ -6,7 +6,7 @@
 """
 
 import sys, os
-from pyforms import conf
+from confapp import conf
 
 __version__ 	= "1.0"
 __author__  	= "Ricardo Jorge Vieira Ribeiro"

@@ -17,7 +17,7 @@ import json
 import pandas as pd
 
 from AnyQt.QtCore import QTimer
-from pyforms import conf
+from confapp import conf
 from pathlib import Path
 
 from pybpodapi.session import Session

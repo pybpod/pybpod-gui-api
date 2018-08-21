@@ -3,7 +3,7 @@
 
 
 import os, csv, datetime, logging, dateutil, uuid
-from pyforms import conf
+from confapp import conf
 from pathlib import Path
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
