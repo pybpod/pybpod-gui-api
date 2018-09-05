@@ -3,7 +3,6 @@ import logging, os, uuid
 class UserBase():
     
     def __init__(self, _project):
-        print('INITING USER')
         self._path = None
         self.uuid4 = uuid.uuid4()
         self.project = _project
