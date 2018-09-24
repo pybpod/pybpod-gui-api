@@ -10,3 +10,7 @@ docs/app\.log
 *.pyc
 
 pybpod_gui_api\.egg-info/
+
+build/
+
+dist/
