@@ -10,9 +10,9 @@ with open('pybpodgui_api/__init__.py', 'r') as fd: version = re.search(r'^__vers
 if not version: raise RuntimeError('Cannot find version information')
 
 requirements = [
-	'pyforms>=1.0.0',
-	'pyserial>= 3.1.1',
-	'logging-bootstrap>=1.0.0',
+	'pybpod-api',
+	'safe-and-collaborative-architecture',
+	'pandas'
 ]
 
 setup(
@@ -26,5 +26,5 @@ setup(
 
 	include_package_data=True,
 	packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples', 'deploy', 'reports']),
-
+	install_requires=requirements,
 )

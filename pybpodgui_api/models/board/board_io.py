@@ -19,6 +19,8 @@ class BoardIO(BoardBase):
     def __init__(self, project):
         super(BoardIO, self).__init__(project)
 
+        self.data = None
+
         
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -44,12 +46,15 @@ class BoardIO(BoardBase):
         else:
             if not os.path.exists(self.path): os.makedirs(self.path)
 
-            data = json.scadict(
-                uuid4_id=self.uuid4,
-                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-                def_url ='http://pybpod.readthedocs.org',
-                def_text='This file contains the configuration of Bpod board.'
-            )
+            if self.data:
+                data = self.data
+            else:
+                data = json.scadict(
+                    uuid4_id=self.uuid4,
+                    software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                    def_url ='http://pybpod.readthedocs.org',
+                    def_text='This file contains the configuration of Bpod board.'
+                )
             data['serial-port']           = self.serial_port
             data['enabled-bncports']      = self.enabled_bncports
             data['enabled-wiredports']    = self.enabled_wiredports
@@ -68,7 +73,7 @@ class BoardIO(BoardBase):
         """
         self.name = os.path.basename(path)
         with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-            data = json.load(stream)
+            self.data = data = json.load(stream)
 
         self.uuid4                  = data.uuid4 if data.uuid4 else self.uuid4
         self.serial_port            = data.get('serial-port',           data.get('serial_port', None) )

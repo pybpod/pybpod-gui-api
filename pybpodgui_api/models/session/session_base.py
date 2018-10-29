@@ -3,6 +3,7 @@
 
 
 import os, csv, datetime, logging, dateutil, uuid
+from confapp import conf
 from pathlib import Path
 from pybpodapi.session import Session
 from pybpodapi.com.messaging.session_info import SessionInfo
@@ -26,7 +27,7 @@ class SessionBase(object):
         self.creator            = ''
         self.setup_name         = setup.name
         self.board_name         = setup.board.name if setup.board else None
-        self.task_name          = setup.task.name if setup.task else None
+        self.task_name          = setup.task.name  if setup.task  else None
         self.board_serial_port  = setup.board.serial_port if setup.board else None
         self.started            = datetime.datetime.now()
         self.ended              = None
@@ -34,24 +35,18 @@ class SessionBase(object):
         self.subjects           = []
         self.filepath           = None
         self.variables          = []
+        self.user               = None
 
-        '''
-        for s in setup.subjects:
-            s+=self
-        '''
-
-    
 
     def __default_name(self, setup):
-        return datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        """
-        return '_'.join([
-            setup.experiment.name,
-            '+'.join([s.name for s in setup.subjects]),
-            setup.task.name if setup.task is not None else 'None',
-            datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        ])
-        """
+        name = conf.PYBPODGUI_API_DEFAULT_SESSION_NAME
+        name = name.replace('[datetime]',   datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
+        name = name.replace('[project]',    setup.experiment.project.name)
+        name = name.replace('[experiment]', setup.experiment.name)
+        name = name.replace('[setup]',      setup.name)
+        name = name.replace('[protocol]',   setup.task.name if setup.task is not None else 'None')
+        name = name.replace('[subjects]',   '.'.join([s.name for s in setup.subjects]))
+        return name
 
     ##########################################################################
     ####### PROPERTIES #######################################################

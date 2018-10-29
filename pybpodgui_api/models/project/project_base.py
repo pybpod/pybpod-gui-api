@@ -9,6 +9,7 @@ from pybpodgui_api.models.experiment import Experiment
 from pybpodgui_api.models.board      import Board
 from pybpodgui_api.models.task       import Task
 from pybpodgui_api.models.subject    import Subject
+from pybpodgui_api.models.user       import User
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +27,9 @@ class ProjectBase(object):
         self._tasks         = []
         self._boards        = []
         self._subjects      = []
+        self._users         = []
         self._path          = None
+        
 
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -77,6 +80,16 @@ class ProjectBase(object):
         """
         return self._path
 
+    @property
+    def users(self):
+        """
+        Get the list of users in the project
+
+        :rtype: list(User)
+        """
+        return self._users
+   
+   
     @path.setter
     def path(self, value):
         self._path = value
@@ -128,6 +141,7 @@ class ProjectBase(object):
         if isinstance(obj, Board):      self._boards.append(obj)
         if isinstance(obj, Task):       self._tasks.append(obj)
         if isinstance(obj, Subject):    self._subjects.append(obj)
+        if isinstance(obj, User):       self._users.append(obj)
         return self
 
     def __sub__(self, obj):
@@ -135,6 +149,7 @@ class ProjectBase(object):
         if isinstance(obj, Board):      self._boards.remove(obj)
         if isinstance(obj, Task):       self._tasks.remove(obj)
         if isinstance(obj, Subject):    self._subjects.remove(obj)
+        if isinstance(obj, User):       self._users.remove(obj)
         return self
 
     def find_board(self, name):
@@ -189,6 +204,12 @@ class ProjectBase(object):
                         return session
         return None
 
+    def find_user(self,username):
+        for user in self.users:
+            if user.name == username:
+                return user
+        return None
+
     def create_experiment(self):
         """
         Add an experiment to the project, and return it.
@@ -220,3 +241,11 @@ class ProjectBase(object):
         :rtype: Subject
         """
         return Subject(self)
+
+    def create_user(self):
+        """
+        Add a user bject to the project, and return it.
+        
+        :rtype: User
+        """
+        return User(self)

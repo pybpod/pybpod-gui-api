@@ -20,7 +20,7 @@ class SetupBaseIO(SetupBase):
 
         #initial name. Used to track if the name was updated
         self.initial_name = None
-
+        self.data = None
 
 
     ##########################################################################
@@ -65,18 +65,24 @@ class SetupBaseIO(SetupBase):
                 [session.name for session in self.sessions]
             )
             
-            data = json.scadict(
-                uuid4_id=self.uuid4,
-                software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-                def_url ='http://pybpod.readthedocs.org',
-                def_text='This file contains information about a PyBpod experiment setup.'
-            )
+            if self.data:
+                data = self.data
+            else:
+                data = json.scadict(
+                    uuid4_id=self.uuid4,
+                    software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
+                    def_url ='http://pybpod.readthedocs.org',
+                    def_text='This file contains information about a PyBpod experiment setup.'
+                )
             data['board']     = self.board.name if self.board else None
             data['task']      = self.task.name if self.task else None
             data['subjects']  = [subject.name for subject in self.subjects]
             data['detached']  = self.detached
-            data.update( self.board_task.save() ) # collect board_task data
-            
+
+            # collect board_task data
+            for key, value in self.board_task.save().items():
+                data[key] = value 
+           
             if self.board:                data.add_external_ref(self.board.uuid4)
             for subject in self.subjects: data.add_external_ref(subject.uuid4)
 
@@ -87,9 +93,6 @@ class SetupBaseIO(SetupBase):
 
             
 
-
-
-
     def load(self, path):
         """
         Load setup data from filesystem
@@ -99,7 +102,7 @@ class SetupBaseIO(SetupBase):
         """
         self.name  = os.path.basename(path)
         with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-            data = json.load(stream)
+            self.data = data = json.load(stream)
         self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
 
         self.initial_name = self.name
@@ -114,7 +117,7 @@ class SetupBaseIO(SetupBase):
         
         sessionspath = os.path.join(self.path, 'sessions')
         if os.path.exists(sessionspath):
-            for name in os.listdir(sessionspath):
+            for name in sorted(os.listdir(sessionspath)):
                 if os.path.isfile( os.path.join(sessionspath, name) ): continue
                 session = self.create_session()
                 session.load( os.path.join(sessionspath, name) )

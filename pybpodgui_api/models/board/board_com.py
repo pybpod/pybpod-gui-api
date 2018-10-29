@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import datetime, dateutil
+import dateutil, traceback
 import logging
 import os
 import ntpath
@@ -13,10 +13,11 @@ import sys
 import pickle
 import base64
 import marshal
+import json
 import pandas as pd
 
 from AnyQt.QtCore import QTimer
-from pyforms import conf
+from confapp import conf
 from pathlib import Path
 
 from pybpodapi.session import Session
@@ -129,8 +130,18 @@ class BoardCom(BoardIO):
         """
         session.subjects = [str([s.name, str(s.uuid4)]) for s in board_task.setup.subjects]
 
+        xt_user = ''
+        xt_subject = ''
+        if hasattr(conf,'PYBPOD_EXTRA_INFO'):
+            if 'Users' in conf.PYBPOD_EXTRA_INFO:
+                xt_user = session.user.toJSON()
+            if 'Subjects' in conf.PYBPOD_EXTRA_INFO:
+                xt_subject = []
+                for sbj in board_task.setup.subjects:
+                    xt_subject.append(sbj.toJSON())
+
         self._running_detached  = detached
-        self._running_boardtask = board_task 
+        self._running_boardtask = board_task
         self._running_task      = board_task.task
         self._running_session   = session
         
@@ -154,9 +165,14 @@ class BoardCom(BoardIO):
             board           = board_task.board.name,
             setup           = session.setup.name,
             session         = session.name,
+            protocolname    = board_task.task.name,
             session_path    = os.path.abspath(session.path).encode('unicode_escape').decode(),
             subjects        = ','.join( list(map(lambda x: '"'+str(x)+'"', session.subjects)) ),
-            variables_names = ','.join(["'"+var.name+"'" for var in board_task.variables])
+            user            = json.dumps([session.user.name, str(session.user.uuid4), session.user.connection] if session.user.uuid4 else None),
+            subject_extra   = ','.join( list(map(lambda x: '"'+str(x)+'"', xt_subject)) ),
+            user_extra      = xt_user,
+            variables_names = ','.join(["'"+var.name+"'" for var in board_task.variables]),
+            bpod_firmware_version = conf.TARGET_BPOD_FIRMWARE_VERSION
         )
 
         for var in board_task.variables:
@@ -173,7 +189,11 @@ class BoardCom(BoardIO):
         ## Execute the PRE commands ################################### 
         for cmd in board_task.task.commands:
             if cmd.when==0:
-                cmd.execute(session=session)
+                try:
+                    cmd.execute(session=session)
+                except Exception as err:
+                    traceback.print_exc()
+                    self.alert(str(err), "Unexpected error when executing a pre-command.")
         ############################################################### 
 
         task = board_task.task
@@ -258,7 +278,13 @@ class BoardCom(BoardIO):
 
         ## Execute the POST commands ################################## 
         for cmd in self._running_task.commands:
-            if cmd.when==1: cmd.execute(session=session)
+            if cmd.when==1:
+                try:
+                    cmd.execute(session=session)
+                except Exception as err:
+                    traceback.print_exc()
+                    self.alert(str(err), "Unexpected error when executing the post-command" )
+
         ############################################################### 
 
         self.status = self.STATUS_READY

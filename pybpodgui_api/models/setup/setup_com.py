@@ -3,6 +3,7 @@
 
 import logging
 
+from confapp import conf
 from pybpodgui_api.exceptions.run_setup import RunSetupError
 from pybpodgui_api.models.setup.setup_io import SetupBaseIO
 
@@ -85,16 +86,25 @@ class SetupCom(SetupBaseIO):
 			logger.warning("Setup has no protocol assigned.")
 			raise RunSetupError("Please assign a board and protocol first")
 
+		if conf.PYBPODGUI_API_CHECK_SUBJECTS_ON_RUN and len(self.subjects) == 0:
+			logger.warning("No Subjects selected")
+			raise RunSetupError("Please add subjects to this experiment")
+
+		if self.project.loggeduser is None:
+			logger.warning("No User selected")
+			raise RunSetupError("Please select an User")
+
 		try:
 			# update the status of the setup
 			self.status = self.STATUS_RUNNING_TASK
 
 			session = self.create_session()
+			session.user = self.project.loggeduser
 
 			self._run_flag = self.board.run_task(
 				session, 
-				self.board_task, 
-				self.path, 
+				self.board_task,
+				self.path,
 				detached=self.detached
 			)
 
