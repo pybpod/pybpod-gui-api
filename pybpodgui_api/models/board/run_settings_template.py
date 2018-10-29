@@ -26,6 +26,8 @@ PYBPOD_SUBJECT_EXTRA = '{subject_extra}'
 PYBPOD_USER_EXTRA = '{user_extra}'
 
 
+TARGET_BPOD_FIRMWARE_VERSION = '{bpod_firmware_version}'
+
 #import logging
 #PYBPOD_API_LOG_LEVEL = logging.DEBUG
 #PYBPOD_API_LOG_FILE  = 'pybpod-api.log'

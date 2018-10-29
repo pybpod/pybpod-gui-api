@@ -8,7 +8,7 @@
 import sys, os
 from confapp import conf
 
-__version__ 	= "1.1.1"
+__version__ 	= "1.1.2"
 __author__  	= "Ricardo Jorge Vieira Ribeiro"
 __credits__ 	= ["Ricardo Ribeiro", "Carlos Mão de Ferro"]
 __license__ 	= "Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>"

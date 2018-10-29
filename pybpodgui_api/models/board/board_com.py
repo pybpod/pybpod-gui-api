@@ -171,7 +171,8 @@ class BoardCom(BoardIO):
             user            = json.dumps([session.user.name, str(session.user.uuid4), session.user.connection] if session.user.uuid4 else None),
             subject_extra   = ','.join( list(map(lambda x: '"'+str(x)+'"', xt_subject)) ),
             user_extra      = xt_user,
-            variables_names = ','.join(["'"+var.name+"'" for var in board_task.variables])
+            variables_names = ','.join(["'"+var.name+"'" for var in board_task.variables]),
+            bpod_firmware_version = conf.TARGET_BPOD_FIRMWARE_VERSION
         )
 
         for var in board_task.variables:
