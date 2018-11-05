@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import logging, os, uuid
-from pybpodgui_api.models.setup.board_task import BoardTask
 from pybpodgui_api.models.session import Session
+from pybpodgui_api.utils.generate_name import generate_name
 
 logger = logging.getLogger(__name__)
 
@@ -13,15 +13,15 @@ class SubjectBase(object):
     def __init__(self, project):
         self._path      = None
         self.uuid4      = uuid.uuid4()
-        
-        self.name       = 'Untitled subject {0}'.format(len(project.subjects))
+
+        self.name       = generate_name([x.name for x in project.subjects], "subject")
+
         self.project    = project
 
         self.project    += self
 
         self._sessions = []
 
-        
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
