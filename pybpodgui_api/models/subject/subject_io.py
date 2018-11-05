@@ -78,6 +78,6 @@ class SubjectIO(SubjectBase):
                 self.data = data = json.load(stream)
             self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
         except:
-            raise Exception('There was an error loading the configuration file for the subject [{0}]')
+            raise Exception(f'There was an error loading the configuration file for the subject [{self.name}]. File not found.')
             
     
