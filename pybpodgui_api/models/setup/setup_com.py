@@ -92,7 +92,7 @@ class SetupCom(SetupBaseIO):
 
 		if self.project.loggeduser is None:
 			logger.warning("No User selected")
-			raise RunSetupError("Please select an User")
+			raise RunSetupError("Please select an User. Please double click an User in the project tree to select it.")
 
 		try:
 			# update the status of the setup
