@@ -5,6 +5,7 @@ import logging, os, uuid
 from pybpodgui_api.models.setup.board_task import BoardTask
 from pybpodgui_api.models.session import Session
 from pybpodgui_api.models.subject import Subject
+from pybpodgui_api.utils.generate_name import generate_name
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class SetupBase(object):
         :ivar Experiment experiment: Experiment to which the Setup belongs to
         """
         self.uuid4    = uuid.uuid4()
-        self.name     = "Untitled setup {0}".format(len(experiment.setups))
+        self.name     = generate_name([x.name for x in experiment.setups], "setup")
         self.detached = False
         
         self.experiment = experiment

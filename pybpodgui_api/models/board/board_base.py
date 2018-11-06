@@ -7,6 +7,9 @@ A board represents the hardware that controls the running session for a specific
 
 import os, uuid
 import logging
+
+from pybpodgui_api.utils.generate_name import generate_name
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +24,7 @@ class BoardBase(object):
         """
         self.uuid4      = uuid.uuid4()
         
-        self.name        = 'Untitled box {0}'.format(len(project.boards))
+        self.name        = generate_name([x.name for x in project.boards], "box")
         self.serial_port = None
         self.project     = project
         self.net_port    = 36000+len(project.boards)
