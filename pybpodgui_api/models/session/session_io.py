@@ -64,6 +64,9 @@ class SessionIO(SessionBase):
         self.name  = os.path.basename(path)
         # only set the filepath if it exists
         filepath      = os.path.join(self.path, self.name+'.csv')
+
+        if not os.path.exists(filepath):
+            return
         
         try:
             self.filepath = filepath
