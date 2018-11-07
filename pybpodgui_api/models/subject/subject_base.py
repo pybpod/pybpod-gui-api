@@ -17,6 +17,7 @@ class SubjectBase(object):
         self.name       = generate_name([x.name for x in project.subjects], "subject")
 
         self.project    = project
+        self.setup      = None
 
         self.project    += self
 
@@ -78,6 +79,19 @@ class SubjectBase(object):
 
     @project.setter
     def project(self, value):   self._project = value
+
+    @property
+    def setup(self):
+        """
+        Get and set project
+
+        :rtype: str
+        """
+        return self._setup
+
+    @setup.setter
+    def setup(self, value):
+        self._setup = value
 
     @property
     def path(self):
