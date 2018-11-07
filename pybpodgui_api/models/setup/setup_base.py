@@ -192,7 +192,9 @@ class SetupBase(object):
         return Session(self)
 
     def clear_subjects(self):
-        for subj in self.subjects:
+        # we need the copy because we are not allowed to change the same container that we are iterating
+        subjects_copy = self.subjects.copy()
+        for subj in subjects_copy:
             self -= subj
 
     def __unicode__(self):
