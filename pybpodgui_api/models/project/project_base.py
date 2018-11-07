@@ -185,6 +185,19 @@ class ProjectBase(object):
             if subject.name == name: return subject
         return None
 
+    def find_setup_by_id(self, uuid4):
+        """
+        Find a setup by the id
+
+        :ivar str uuid4: UUID4 of the setup to find.
+        :rtype: Setup
+        """
+        for experiment in self.experiments:
+            for setup in experiment.setups:
+                if setup.uuid4 == uuid4:
+                    return setup
+        return None
+
     def find_subject_by_id(self, uuid4):
         """
         Find a subject by the name

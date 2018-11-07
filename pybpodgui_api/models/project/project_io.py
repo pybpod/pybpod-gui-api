@@ -89,11 +89,14 @@ class ProjectIO(ProjectBase):
                 if os.path.isfile( os.path.join(experimentspath, name) ): continue
                 experiment = self.create_experiment()
                 experiment.load( os.path.join(experimentspath, name) )
-        
-        logger.debug("==== LOAD FINNISHED ====")
+
+        logger.debug("==== POSTLOAD SUBJECTS ====")
+        for subject in self.subjects:
+            subject.post_load()
         
         self.data_hash = self.__generate_project_hash()
-        
+
+        logger.debug("==== LOAD FINNISHED ====")
 
 
     def save(self, project_path):
