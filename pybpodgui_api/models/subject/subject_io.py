@@ -90,3 +90,8 @@ class SubjectIO(SubjectCom):
 
     def post_load(self):
         self.setup = self.project.find_setup_by_id(self._setup_id) if self._setup_id else None
+
+    def collect_data(self, data):
+        data.update({'name': self.name})
+        data.update({'setup': self.setup.uuid4 if self.setup else 'None'})
+        return data

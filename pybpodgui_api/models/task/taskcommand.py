@@ -53,6 +53,11 @@ class ScriptCmd(TaskCommand):
         self.when   = data['when']
         self.script = data['script']
 
+    def collect_data(self, data):
+        data.update({'script': self.script})
+        data.update({'when': self.when})
+
+        return data
 
 class ExecCmd(TaskCommand):
 
@@ -92,3 +97,9 @@ class ExecCmd(TaskCommand):
         """
         self.when = data['when']
         self.cmd  = data['cmd']
+
+    def collect_data(self, data):
+        data.update({'cmd': self.cmd})
+        data.update({'when': self.when})
+
+        return data
