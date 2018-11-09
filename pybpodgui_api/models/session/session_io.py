@@ -34,6 +34,26 @@ class SessionIO(SessionBase):
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
+    def collect_data(self, data):
+        data.update({'name': self.name})
+        data.update({'uuid4': self.uuid4})
+        data.update({'started': str(self.started.strftime('%Y%m%d-%H%M%S')) if self.started else None})
+        data.update({'ended': str(self.ended.strftime('%Y%m%d-%H%M%S')) if self.ended else None})
+        data.update({'setup': self.setup.uuid4})
+        data.update({'task': self.task.uuid4})
+        data.update({'board': self.setup.board.uuid4})
+        data.update({'serial_port': self.setup.board.serial_port})
+
+        data.update({'subjects': []})
+        for subject in self.subjects:
+            data['subjects'].append(subject)
+
+        data.update({'variables': []})
+        for var in self.variables:
+            data['variables'].append(var)
+
+        return data
+
     def save(self):
         """
 
@@ -125,6 +145,7 @@ class SessionIO(SessionBase):
                 if msg:
                     if isinstance(msg, SessionInfo):
                         if   msg.infoname==Session.INFO_SESSION_NAME:
+
                             self.task_name = msg.infovalue
 
                         elif msg.infoname==Session.INFO_CREATOR_NAME:

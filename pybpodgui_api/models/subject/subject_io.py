@@ -69,7 +69,7 @@ class SubjectIO(SubjectCom):
 
     def load(self, path):
         """
-        Load sebject data from filesystem
+        Load subject data from filesystem
 
         :ivar str subject_path: Path of the subject
         :ivar dict data: data object that contains all subject info
