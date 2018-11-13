@@ -89,7 +89,7 @@ class SubjectIO(SubjectCom):
             
 
     def post_load(self):
-        self.setup = self.project.find_setup_by_id(self._setup_id) if self._setup_id else None
+        self.setup = self.project.find_setup_by_id(self._setup_id) if hasattr(self, "_setup_id") else None
 
     def collect_data(self, data):
         data.update({'name': self.name})
