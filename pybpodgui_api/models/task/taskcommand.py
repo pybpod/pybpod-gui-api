@@ -70,14 +70,10 @@ class ExecCmd(TaskCommand):
         p = subprocess.Popen(
             self.cmd.split(' '),
             cwd=self.task.path,
-            shell=True,
             #stdin=subprocess.PIPE, 
-            stdout=subprocess.PIPE,
+            #stdout=subprocess.PIPE,
             #stderr=subprocess.PIPE
         )
-
-        (output, err) = p.communicate()
-        print(output.decode("utf-8"))
 
     def __str__(self): 
         return self.cmd
