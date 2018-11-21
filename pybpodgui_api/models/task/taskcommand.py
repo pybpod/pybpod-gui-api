@@ -3,6 +3,7 @@
 
 import subprocess, os
 
+
 class TaskCommand(object):
 
     WHEN_PRE  = 0
@@ -66,13 +67,17 @@ class ExecCmd(TaskCommand):
         self.cmd = ''
 
     def execute(self, **kwargs):
-        subprocess.Popen(
+        p = subprocess.Popen(
             self.cmd.split(' '),
             cwd=self.task.path,
+            shell=True,
             #stdin=subprocess.PIPE, 
-            #stdout=subprocess.PIPE, 
+            stdout=subprocess.PIPE,
             #stderr=subprocess.PIPE
         )
+
+        (output, err) = p.communicate()
+        print(output.decode("utf-8"))
 
     def __str__(self): 
         return self.cmd
@@ -86,7 +91,6 @@ class ExecCmd(TaskCommand):
         :rtype: dict
         """
         return {'type': 'create_execcmd', 'when': self.when, 'cmd': self.cmd}
-
 
     def load(self, data):
         """
