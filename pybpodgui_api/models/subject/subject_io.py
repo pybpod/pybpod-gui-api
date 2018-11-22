@@ -85,7 +85,7 @@ class SubjectIO(SubjectCom):
 
 
         except:
-            raise Exception(f'There was an error loading the configuration file for the subject [{self.name}]. File not found.')
+            raise Exception('There was an error loading the configuration file for the subject [{name}]. File not found.'.format(name=self.name))
             
 
     def post_load(self):

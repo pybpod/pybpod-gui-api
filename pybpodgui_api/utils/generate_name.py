@@ -1,5 +1,5 @@
 def generate_name(subjects, suffix):
-    final_name = f'Untitled {suffix} {len(subjects)}'
+    final_name = 'Untitled {suffix} {len}'.format(suffix=suffix, len=len(subjects))
     # rename current subject if the name already exists in the list
     if len(subjects) == 0:
         return final_name
