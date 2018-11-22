@@ -107,15 +107,15 @@ class SetupCom(SetupBaseIO):
 		if not self.board or not self.task:
 			logger.warning("Setup has no protocol assigned.")
 			raise RunSetupError("Please assign a board and protocol first")
-		if not self.project.is_saved():
-			logger.warning("Run protocol cannot be executed because project is not saved.")
-			raise RunSetupError("Project must be saved before run protocol")
 		if conf.PYBPODGUI_API_CHECK_SUBJECTS_ON_RUN and len(self.subjects) == 0:
 			logger.warning("No Subjects selected")
 			raise RunSetupError("Please add subjects to this experiment")
 		if self.project.loggeduser is None:
 			logger.warning("No User selected")
 			raise RunSetupError("Please select an User. Please double click an User in the project tree to select it.")
+		if not self.project.is_saved():
+			logger.warning("Run protocol cannot be executed because project is not saved.")
+			raise RunSetupError("Project must be saved before run protocol")
 		return True
 
 	
