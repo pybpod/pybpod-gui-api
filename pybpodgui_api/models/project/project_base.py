@@ -10,7 +10,7 @@ from pybpodgui_api.models.board      import Board
 from pybpodgui_api.models.task       import Task
 from pybpodgui_api.models.subject    import Subject
 from pybpodgui_api.models.user       import User
-
+from pybpodgui_api.utils.copy_directory import copy_directory
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ class ProjectBase(object):
     ####### FUNCTIONS ########################################################
     ##########################################################################
 
-    def import_task(self, filepath):
+    def import_task(self, filepath, importdir=False):
         if self.path==None:
             raise Exception('The project has to be saved first')
 
@@ -130,11 +130,14 @@ class ProjectBase(object):
         task.make_path()
         new_filepath  = os.path.join(task.path, task.name+'.py')
         task.filepath = new_filepath
-        shutil.copy(filepath, new_filepath)
+
+        if importdir:
+            copy_directory(os.path.dirname(filepath), task.path + "/")
+        else:
+            shutil.copy(filepath, new_filepath)
         ###########################################################
 
         return task
-
 
     def __add__(self, obj):     
         if isinstance(obj, Experiment): self._experiments.append(obj)
