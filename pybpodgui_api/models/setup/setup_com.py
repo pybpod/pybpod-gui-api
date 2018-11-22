@@ -104,12 +104,12 @@ class SetupCom(SetupBaseIO):
 			raise Exception("Unknown error found while running task. See log for more details.")
 
 	def can_run_task(self):
-		if not self.project.is_saved():
-			logger.warning("Run protocol cannot be executed because project is not saved.")
-			raise RunSetupError("Project must be saved before run protocol")
 		if not self.board or not self.task:
 			logger.warning("Setup has no protocol assigned.")
 			raise RunSetupError("Please assign a board and protocol first")
+		if not self.project.is_saved():
+			logger.warning("Run protocol cannot be executed because project is not saved.")
+			raise RunSetupError("Project must be saved before run protocol")
 		if conf.PYBPODGUI_API_CHECK_SUBJECTS_ON_RUN and len(self.subjects) == 0:
 			logger.warning("No Subjects selected")
 			raise RunSetupError("Please add subjects to this experiment")

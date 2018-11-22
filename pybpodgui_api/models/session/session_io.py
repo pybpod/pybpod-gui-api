@@ -40,7 +40,7 @@ class SessionIO(SessionBase):
         data.update({'started': str(self.started.strftime('%Y%m%d-%H%M%S')) if self.started else None})
         data.update({'ended': str(self.ended.strftime('%Y%m%d-%H%M%S')) if self.ended else None})
         data.update({'setup': self.setup.uuid4})
-        data.update({'task': self.task.uuid4})
+        data.update({'task': self.task.uuid4 if self.task else None})
         data.update({'board': self.setup.board.uuid4})
         data.update({'serial_port': self.setup.board.serial_port})
 
