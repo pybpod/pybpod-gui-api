@@ -16,7 +16,5 @@ def copy_directory(src, dest):
         if not os.path.exists(dst_dir):
             os.mkdir(dst_dir)
         for file_ in files:
-            if os.path.exists(os.path.join(dst_dir, file_)):
-                continue
             src_file = os.path.join(src_dir, file_)
             shutil.copy(src_file, dst_dir)
