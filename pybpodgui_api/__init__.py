@@ -1,19 +1,19 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-""" pyControlAPI
+""" pybpod gui API
 
 """
 
 import sys, os
 from confapp import conf
 
-__version__ 	= "1.1.2"
+__version__ 	= "1.2.0"
 __author__  	= "Ricardo Jorge Vieira Ribeiro"
-__credits__ 	= ["Ricardo Ribeiro", "Carlos Mão de Ferro"]
+__credits__ 	= ["Ricardo Ribeiro", "Carlos Mão de Ferro", 'Luís Teixeira']
 __license__ 	= "Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>"
-__maintainer__ 	= ["Ricardo Ribeiro", "Carlos Mão de Ferro"]
-__email__ 		= ["ricardojvr@gmail.com", "cajomferro@gmail.com"]
+__maintainer__ 	= ["Ricardo Ribeiro", "Carlos Mão de Ferro", 'Luís Teixeira']
+__email__ 		= ["ricardojvr@gmail.com", "cajomferro@gmail.com", 'micboucinha@gmail.com']
 __status__ 		= "Development"
 
 # Load settings using pyforms library
