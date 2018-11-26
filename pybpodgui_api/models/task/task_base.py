@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import logging, os, uuid
+
+from pybpodgui_api.utils.generate_name import generate_name
+
 from .taskcommand import ExecCmd, ScriptCmd
 from pybpodgui_api.utils.send2trash_wrapper import send2trash
 
@@ -19,7 +22,7 @@ class TaskBase(object):
         self.uuid4    = uuid.uuid4()
         self.filepath = None
         self.project  = project
-        self.name     = 'Untitled task {0}'.format( len(project.tasks) ) if project else None
+        self.name     = generate_name([x.name for x in project.tasks], "task") if project else None
         self.project += self
         
         self._commands = []

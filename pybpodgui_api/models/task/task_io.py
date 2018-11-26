@@ -90,3 +90,14 @@ class TaskIO(TaskBase):
         for cmddata in data.get('commands', []):
             cmd = getattr(self, cmddata['type'])()
             cmd.load(cmddata)
+
+    def collect_data(self, data):
+        data.update({'name': self.name})
+        data.update({'trigger_softcodes': self.trigger_softcodes})
+
+        data.update({'commands': []})
+
+        for cmd in self.commands:
+            data['commands'].append(cmd.collect_data({}))
+
+        return data

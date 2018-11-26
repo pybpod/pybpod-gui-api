@@ -1,12 +1,15 @@
 import logging, os, uuid
 
+from pybpodgui_api.utils.generate_name import generate_name
+
+
 class UserBase():
     
     def __init__(self, _project):
         self._path = None
         self.uuid4 = uuid.uuid4()
         self.project = _project
-        self._name = 'Untitled user {0}'.format(len(self.project.users))
+        self._name = generate_name([x.name for x in _project.users], "user")
         self.name = self._name
         self.connection = 'local'
         

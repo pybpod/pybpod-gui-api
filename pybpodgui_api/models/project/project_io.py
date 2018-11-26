@@ -89,11 +89,14 @@ class ProjectIO(ProjectBase):
                 if os.path.isfile( os.path.join(experimentspath, name) ): continue
                 experiment = self.create_experiment()
                 experiment.load( os.path.join(experimentspath, name) )
-        
-        logger.debug("==== LOAD FINNISHED ====")
+
+        logger.debug("==== POSTLOAD SUBJECTS ====")
+        for subject in self.subjects:
+            subject.post_load()
         
         self.data_hash = self.__generate_project_hash()
-        
+
+        logger.debug("==== LOAD FINNISHED ====")
 
 
     def save(self, project_path):
@@ -203,12 +206,24 @@ class ProjectIO(ProjectBase):
         data.update({'name': self.name})
         data.update({'experiments': []})
         data.update({'boards': []})
+        data.update({'users': []})
+        data.update({'subjects': []})
+        data.update({'tasks': []})
 
         for board in self.boards:
             data['boards'].append(board.collect_data({}))
 
         for experiment in self.experiments:
             data['experiments'].append(experiment.collect_data({}))
+
+        for task in self.tasks:
+            data['tasks'].append(task.collect_data({}))
+
+        for user in self.users:
+            data['users'].append(user.collect_data({}))
+
+        for subject in self.subjects:
+            data['subjects'].append(subject.collect_data({}))
 
         logger.debug("Project data: %s", data)
 

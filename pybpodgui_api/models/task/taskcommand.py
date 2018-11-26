@@ -3,6 +3,7 @@
 
 import subprocess, os
 
+
 class TaskCommand(object):
 
     WHEN_PRE  = 0
@@ -53,6 +54,11 @@ class ScriptCmd(TaskCommand):
         self.when   = data['when']
         self.script = data['script']
 
+    def collect_data(self, data):
+        data.update({'script': self.script})
+        data.update({'when': self.when})
+
+        return data
 
 class ExecCmd(TaskCommand):
 
@@ -61,11 +67,11 @@ class ExecCmd(TaskCommand):
         self.cmd = ''
 
     def execute(self, **kwargs):
-        subprocess.Popen(
+        p = subprocess.Popen(
             self.cmd.split(' '),
             cwd=self.task.path,
             #stdin=subprocess.PIPE, 
-            #stdout=subprocess.PIPE, 
+            #stdout=subprocess.PIPE,
             #stderr=subprocess.PIPE
         )
 
@@ -82,7 +88,6 @@ class ExecCmd(TaskCommand):
         """
         return {'type': 'create_execcmd', 'when': self.when, 'cmd': self.cmd}
 
-
     def load(self, data):
         """
         Load setup data from filesystem
@@ -92,3 +97,9 @@ class ExecCmd(TaskCommand):
         """
         self.when = data['when']
         self.cmd  = data['cmd']
+
+    def collect_data(self, data):
+        data.update({'cmd': self.cmd})
+        data.update({'when': self.when})
+
+        return data

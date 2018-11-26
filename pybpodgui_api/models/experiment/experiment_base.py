@@ -3,6 +3,7 @@
 
 import logging, uuid, os
 from pybpodgui_api.models.setup import Setup
+from pybpodgui_api.utils.generate_name import generate_name
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class ExperimentBase(object):
         """
         self.uuid4   = uuid.uuid4()
         
-        self.name    = 'Untitled experiment {0}'.format(len(project.experiments))
+        self.name    = generate_name([x.name for x in project.experiments], "experiment")
         self._setups = []
         self.project = project
        

@@ -54,3 +54,7 @@ class UserIO(UserBase):
             self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
         except:
             raise Exception('There was an error loading the configuration file for the subject [{0}]')
+
+    def collect_data(self, data):
+        data.update({'name': self.name})
+        return data

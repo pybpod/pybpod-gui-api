@@ -96,9 +96,9 @@ class SessionBase(object):
         """
         Get and set session name
 
-        :rtype: str
+        :rtype:
         """
-        return self._name
+        return self._subjects
 
     @subjects.setter
     def subjects(self, value):

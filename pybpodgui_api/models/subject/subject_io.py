@@ -3,20 +3,20 @@
 
 import os
 import logging, pybpodgui_api
-from pybpodgui_api.models.subject.subject_base import SubjectBase
+from .subject_com import SubjectCom
 
 from sca.formats import json
 
 logger = logging.getLogger(__name__)
 
 
-class SubjectIO(SubjectBase):
+class SubjectIO(SubjectCom):
     """
     
     """
 
     def __init__(self, project):
-        super(SubjectIO, self).__init__(project)
+        super().__init__(project)
 
         self.data = None
 
@@ -48,7 +48,9 @@ class SubjectIO(SubjectBase):
                     def_url ='http://pybpod.readthedocs.org',
                     def_text='This file contains information about a subject used on PyBpod GUI.'
                 )
-            
+
+            data['setup'] = self.setup.uuid4 if self.setup else None
+
             config_path = os.path.join(self.path, self.name+'.json')
             with open(config_path, 'w') as fstream: json.dump(data, fstream)
 
@@ -60,13 +62,14 @@ class SubjectIO(SubjectBase):
                     def_text='This file contains information about a subject used on PyBpod GUI.',
                 )
         data['name'] = self.name
+        data['setup'] = self.setup.uuid4 if self.setup else None
         data['uuid4'] = self.uuid4
         
         return json.dumps(data)
 
     def load(self, path):
         """
-        Load sebject data from filesystem
+        Load subject data from filesystem
 
         :ivar str subject_path: Path of the subject
         :ivar dict data: data object that contains all subject info
@@ -77,7 +80,18 @@ class SubjectIO(SubjectBase):
             with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
                 self.data = data = json.load(stream)
             self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
+
+            self._setup_id = self.data.get('setup', None)
+
+
         except:
-            raise Exception('There was an error loading the configuration file for the subject [{0}]')
+            raise Exception('There was an error loading the configuration file for the subject [{name}]. File not found.'.format(name=self.name))
             
-    
+
+    def post_load(self):
+        self.setup = self.project.find_setup_by_id(self._setup_id) if hasattr(self, "_setup_id") else None
+
+    def collect_data(self, data):
+        data.update({'name': self.name})
+        data.update({'setup': self.setup.uuid4 if self.setup else 'None'})
+        return data
