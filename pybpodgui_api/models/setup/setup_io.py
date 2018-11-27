@@ -29,8 +29,8 @@ class SetupBaseIO(SetupBase):
 
     def collect_data(self, data):
         data.update({'name': self.name})
-        data.update({'board_uuid4': self.board.uuid4 if self.board else None})
-        data.update({'task': self.task.uuid4 if self.task else None})
+        data.update({'board_uuid4': str(self.board.uuid4 if self.board else None)})
+        data.update({'task': str(self.task.uuid4 if self.task else None)})
         self.board_task.collect_data(data)
 
         data.update({'sessions': []})

@@ -49,7 +49,7 @@ class SubjectIO(SubjectCom):
                     def_text='This file contains information about a subject used on PyBpod GUI.'
                 )
 
-            data['setup'] = self.setup.uuid4 if self.setup else None
+            data['setup'] = str(self.setup.uuid4 if self.setup else None)
 
             config_path = os.path.join(self.path, self.name+'.json')
             with open(config_path, 'w') as fstream: json.dump(data, fstream)
@@ -62,7 +62,7 @@ class SubjectIO(SubjectCom):
                     def_text='This file contains information about a subject used on PyBpod GUI.',
                 )
         data['name'] = self.name
-        data['setup'] = self.setup.uuid4 if self.setup else None
+        data['setup'] = str(self.setup.uuid4 if self.setup else None)
         data['uuid4'] = self.uuid4
         
         return json.dumps(data)
@@ -93,5 +93,5 @@ class SubjectIO(SubjectCom):
 
     def collect_data(self, data):
         data.update({'name': self.name})
-        data.update({'setup': self.setup.uuid4 if self.setup else 'None'})
+        data.update({'setup': str(self.setup.uuid4 if self.setup else None)})
         return data
