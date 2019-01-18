@@ -6,8 +6,8 @@ def generate_sound(filename,
                    fs=96000,  # number of samples per second (standard)
                    duration=1,  # seconds
                    frequency_left=1000,  # of cycles per second (Hz) (frequency of the sine wave for the left channel)
-                   frequency_right=1000,  # of cycles per second (Hz) (frequency of the sine wave for the right channel)
-                   write_file=False):
+                   frequency_right=1000):  # of cycles per second (Hz) (frequency of the sine wave for the right channel)
+
     amplitude24bits = math.pow(2, 31) - 1
 
     samples = np.arange(0, duration, 1 / fs)
@@ -18,7 +18,7 @@ def generate_sound(filename,
 
     wave_int = stereo.astype(np.int32)
 
-    if write_file:
+    if filename:
         with open(filename, 'wb') as f:
             wave_int.tofile(f)
 
