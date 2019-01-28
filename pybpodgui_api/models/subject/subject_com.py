@@ -11,6 +11,11 @@ class SubjectCom(SubjectBase):
 
     def can_run_task(self):
 
+        # if already runnning we should stop it (the run button changes to stop when pressed)
+        if self.setup.status == self.setup.STATUS_RUNNING_TASK:
+            self.setup.stop_task()
+            return False
+
         if self.setup is None or self.setup == 0:
             raise Exception('Please select a setup before proceeding.')
 
