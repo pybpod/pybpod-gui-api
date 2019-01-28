@@ -114,8 +114,15 @@ class SetupCom(SetupBaseIO):
 			logger.warning("No User selected")
 			raise RunSetupError("Please select an User. Please double click an User in the project tree to select it.")
 		if not self.project.is_saved():
-			logger.warning("Run protocol cannot be executed because project is not saved.")
-			raise RunSetupError("Project must be saved before run protocol")
+			# check conf property and save project automatically and return true
+			if conf.PYBPODGUI_API_AUTO_SAVE_PROJECT_ON_RUN:
+				logger.info("Auto saving project")
+				print("Auto saving project")
+				self.project.save()
+				return True
+			else:
+				logger.warning("Run protocol cannot be executed because project is not saved.")
+				raise RunSetupError("Project must be saved before run protocol")
 		return True
 
 	
