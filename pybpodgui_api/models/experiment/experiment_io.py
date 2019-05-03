@@ -1,12 +1,12 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, hashlib, shutil
-import pybpodgui_api
+import logging
+import os
+import shutil
 
 from pybpodgui_api.models.experiment.experiment_base import ExperimentBase
-
-from sca.formats import json
+from pybpodgui_api.utils.send2trash_wrapper import send2trash
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +18,11 @@ class ExperimentIO(ExperimentBase):
     def __init__(self, project):
         super(ExperimentIO, self).__init__(project)
 
-        #initial name. Used to track if the name was updated
+        # initial name. Used to track if the name was updated
         self.initial_name = None
 
     ##########################################################################
-    ####### FUNCTIONS ########################################################
+    #       FUNCTIONS                                                        #
     ##########################################################################
 
     def collect_data(self, data):
@@ -49,27 +49,26 @@ class ExperimentIO(ExperimentBase):
             if self.initial_name is not None:
                 initial_path = os.path.join(self.project.path, 'experiments', self.initial_name)
 
-                if initial_path!=self.path:
-                    shutil.move( initial_path, self.path )
+                if initial_path != self.path:
+                    shutil.move(initial_path, self.path)
                     #current_filepath = os.path.join(self.path, self.initial_name+'.json')
                     #future_filepath  = os.path.join(self.path, self.name+'.json')
                     #shutil.move( current_filepath, future_filepath )
 
-            
-            if not os.path.exists(self.path): os.makedirs(self.path)
+            if not os.path.exists(self.path):
+                os.makedirs(self.path)
 
             self.initial_name = self.name
 
             # save setups
-            for setup in self.setups: setup.save()
+            for setup in self.setups:
+                setup.save()
 
             self.project.remove_non_existing_repositories(
                 os.path.join(self.path, 'setups'),
                 [setup.name for setup in self.setups]
             )
-        
-        
-        
+
     def load(self, path):
         """
         Load experiment data from filesystem
@@ -78,7 +77,7 @@ class ExperimentIO(ExperimentBase):
         :ivar dict data: data object that contains all experiment info
         :return: Dictionary with loaded experiment info.
         """       
-        self.name  = os.path.basename(path)
+        self.name = os.path.basename(path)
         #with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
         #    data = json.load(stream)
         #self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
@@ -88,12 +87,10 @@ class ExperimentIO(ExperimentBase):
         setupspath = os.path.join(self.path, 'setups')
         if os.path.exists(setupspath):
             for name in os.listdir(setupspath):
-                if os.path.isfile( os.path.join(setupspath, name) ): continue
+                if os.path.isfile(os.path.join(setupspath, name)):
+                    continue
                 setup = self.create_setup()
-                setup.load( os.path.join(setupspath, name) )
-        
-
-
+                setup.load(os.path.join(setupspath, name))
 
     def __clean_setups_path(self, experiment_path):
         # remove from the setups directory the unused setup files

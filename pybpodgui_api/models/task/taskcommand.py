@@ -29,7 +29,17 @@ class ScriptCmd(TaskCommand):
         global_dict = globals()
         global_dict.update(kwargs)
         script_path = os.path.join(self.task.path, self.script)
-        exec(open(script_path).read(), global_dict)
+
+        environment = os.environ.copy()
+        environment['PYTHONPATH'] = os.pathsep.join([os.path.abspath(self.task.path)])
+
+        proc = subprocess.Popen(
+            ['python', os.path.abspath(script_path)],
+            cwd=self.task.path,
+            env=environment
+        )
+        proc.wait()
+        # exec(open(script_path).read(), global_dict)
 
     def __str__(self):
         return self.script
@@ -59,6 +69,7 @@ class ScriptCmd(TaskCommand):
         data.update({'when': self.when})
 
         return data
+
 
 class ExecCmd(TaskCommand):
 

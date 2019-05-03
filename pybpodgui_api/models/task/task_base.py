@@ -117,6 +117,14 @@ class TaskBase(object):
         """
         return self._commands
 
+    @commands.setter
+    def commands(self, commands):
+        """
+        Setter for commands
+        :param commands:
+        :return:
+        """
+        self._commands = commands
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
