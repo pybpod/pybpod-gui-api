@@ -17,7 +17,7 @@ The Scientific Software Platform (SWP) from the Champalimaud Foundation provides
 We typical work on computer vision / tracking, behavioral experiments, image registration and database management.
 
 PyBpod project
-============
+==============
 **PyBpod** is a python port of the `Bpod Matlab project <https://github.com/sanworks/Bpod>`_.
 
 All examples and Bpod's state machine and communication logic were based on the original version made available by `Josh Sanders (Sanworks) <https://github.com/sanworks>`_.
