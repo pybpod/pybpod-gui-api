@@ -204,8 +204,12 @@ class SetupBase(object):
         return self.__unicode__()
 
     def __add__(self, obj):
-        if isinstance(obj, Session) and obj not in self._sessions: self._sessions.append(obj)
-        if isinstance(obj, Subject) and obj not in self._subjects: self._subjects.append(obj)
+        if isinstance(obj, Session) and obj not in self._sessions:
+            self._sessions.append(obj)
+        if isinstance(obj, Subject) and obj not in self._subjects:
+            self._subjects.append(obj)
+        if isinstance(obj, list):
+            self._subjects.extend([x for x in obj if isinstance(x, Subject)])
         return self
 
     def __sub__(self, obj):
