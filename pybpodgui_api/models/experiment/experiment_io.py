@@ -27,7 +27,7 @@ class ExperimentIO(ExperimentBase):
 
     def collect_data(self, data):
         data.update({'name': self.name})
-        #data.update({'task': self.task.name if self.task else None})
+        # data.update({'task': self.task.name if self.task else None})
         data.update({'setups': []})
 
         for setup in self.setups:
@@ -39,8 +39,8 @@ class ExperimentIO(ExperimentBase):
         """
         Save experiment data on filesystem.
 
-        :ivar dict parent_path: Project path.  
-        :return: Dictionary containing the experiment info to save.  
+        :ivar dict parent_path: Project path.
+        :return: Dictionary containing the experiment info to save.
         :rtype: dict
         """
         if not self.name:
@@ -51,9 +51,9 @@ class ExperimentIO(ExperimentBase):
 
                 if initial_path != self.path:
                     shutil.move(initial_path, self.path)
-                    #current_filepath = os.path.join(self.path, self.initial_name+'.json')
-                    #future_filepath  = os.path.join(self.path, self.name+'.json')
-                    #shutil.move( current_filepath, future_filepath )
+                    # current_filepath = os.path.join(self.path, self.initial_name+'.json')
+                    # future_filepath  = os.path.join(self.path, self.name+'.json')
+                    # shutil.move( current_filepath, future_filepath )
 
             if not os.path.exists(self.path):
                 os.makedirs(self.path)
@@ -76,14 +76,14 @@ class ExperimentIO(ExperimentBase):
         :ivar str experiment_path: Path of the experiment
         :ivar dict data: data object that contains all experiment info
         :return: Dictionary with loaded experiment info.
-        """       
+        """
         self.name = os.path.basename(path)
-        #with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
-        #    data = json.load(stream)
-        #self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
-        
+        # with open( os.path.join(self.path, self.name+'.json'), 'r' ) as stream:
+        #     data = json.load(stream)
+        # self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
+
         self.initial_name = self.name
-        
+
         setupspath = os.path.join(self.path, 'setups')
         if os.path.exists(setupspath):
             for name in os.listdir(setupspath):

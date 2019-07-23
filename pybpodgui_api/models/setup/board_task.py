@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from pybpodgui_api.exceptions.invalid_task import InvalidTaskError
 from pybpodgui_api.models.setup.task_variable import TaskVariable
 
 logger = logging.getLogger(__name__)
@@ -19,10 +18,10 @@ class BoardTask(object):
         """
         self.setup = setup
         self.board = None
-        self.task  = None
+        self.task = None
         self.variables = []
         self.update_variables = False
-        
+
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
@@ -37,7 +36,8 @@ class BoardTask(object):
         return self._board
 
     @board.setter
-    def board(self, value): self._board = value
+    def board(self, value):
+        self._board = value
 
     @property
     def task(self):
@@ -49,7 +49,8 @@ class BoardTask(object):
         return self._task
 
     @task.setter
-    def task(self, value): self._task = value
+    def task(self, value):
+        self._task = value
 
     @property
     def variables(self):
@@ -61,7 +62,8 @@ class BoardTask(object):
         return self._variables
 
     @variables.setter
-    def variables(self, value): self._variables = value
+    def variables(self, value):
+        self._variables = value
 
     @property
     def update_variables(self):
@@ -74,7 +76,8 @@ class BoardTask(object):
         return self._update_variables
 
     @update_variables.setter
-    def update_variables(self, value): self._update_variables = value
+    def update_variables(self, value):
+        self._update_variables = value
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -96,8 +99,8 @@ class BoardTask(object):
         """
         Save board task data on filesystem.
 
-        :ivar str setup_path: Setup path.  
-        :return: Dictionary containing the board task info to save.  
+        :ivar str setup_path: Setup path.
+        :return: Dictionary containing the board task info to save.
         :rtype: dict
         """
         return {
@@ -117,7 +120,6 @@ class BoardTask(object):
             var = self.create_variable()
             var.load(var_data)
 
-
     def __unicode__(self):
         return "Board : {board} | Task: {task}".format(board=str(self.board), task=str(self.task))
 
@@ -125,5 +127,6 @@ class BoardTask(object):
         return self.__unicode__()
 
     def __add__(self, other):
-        if isinstance(other, TaskVariable): self.variables.append(other)
+        if isinstance(other, TaskVariable):
+            self.variables.append(other)
         return self
