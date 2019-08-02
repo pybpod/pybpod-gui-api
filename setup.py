@@ -14,7 +14,8 @@ if not version:
 requirements = [
     'pybpod-api',
     'safe-and-collaborative-architecture',
-    'pandas'
+	'pandas',
+	'ciso8601'
 ]
 
 setup(

@@ -10,6 +10,8 @@ import io
 import sys
 import json
 import pandas as pd
+import time
+import ciso8601
 
 from confapp import conf
 from pathlib import Path
@@ -188,6 +190,8 @@ class BoardCom(BoardIO):
 
         self.start_run_task_handler()
 
+        # self.elapsed = self.counter = 0
+
         enviroment = os.environ.copy()
         enviroment['PYTHONPATH'] = os.pathsep.join([os.path.abspath(self._running_session.path)]+sys.path)
 
@@ -220,8 +224,13 @@ class BoardCom(BoardIO):
     def run_task_handler(self, flag=True):
 
         if not self._running_detached:
-            row = self.csvreader.readline()
+
+            #start = time.perf_counter()
+            #self.counter += 1
+        
+            row  = self.csvreader.readline()
             data = ''
+            #data = []
             while row is not None:
                 if row is None:
                     break
@@ -230,19 +239,21 @@ class BoardCom(BoardIO):
 
                 if self._running_session.uuid4 is None and len(row) == 2 and row[0] == '__UUID4__':
                     self._running_session.uuid4 = row[1]
-
                 if len(row) > 0:
                     data += str(row)+'\n'
-
+                #if len(row)>0: data.append("{row}\n".format(row=row))
+                
                 self.freegui()
                 row = self.csvreader.readline()
 
-            if len(data) > 0:
-                self.log2board(data)
+            if len(data)>0: self.log2board("".join(data))
 
             errline = self.stderrstream.readline()
             if errline is not None:
                 self.log2board(errline)
+
+            #end = time.perf_counter()
+            #self.elapsed += (end - start)
 
         if flag and self.proc.poll() is not None:
             self.end_run_task_handler()
@@ -256,6 +267,8 @@ class BoardCom(BoardIO):
     def end_run_task_handler(self):
         self.stop_thread()
 
+        #print(f"Average time: {(self.elapsed / self.counter) * 1000}")
+        
         if not self._running_detached:
             # in case it is running detached
             errline = self.stderrstream.readline()
@@ -288,8 +301,8 @@ class BoardCom(BoardIO):
         if session.data is not None:
             res = session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED))
             for index, row in res.iterrows():
-                session.ended = dateutil.parser.parse(row['+INFO'])
-
+                session.ended = ciso8601.parse_datetime(row['+INFO'])
+        
             board_task = self._running_boardtask
 
             if board_task.update_variables:

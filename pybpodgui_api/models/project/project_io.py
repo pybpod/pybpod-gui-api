@@ -98,7 +98,7 @@ class ProjectIO(ProjectBase):
 
         self.data_hash = self.__generate_project_hash()
 
-        logger.debug("==== LOAD FINNISHED ====")
+        logger.debug("==== LOAD FINISHED ====")
 
     def save(self, project_path):
         """

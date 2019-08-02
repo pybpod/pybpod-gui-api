@@ -1,6 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import ciso8601
 import os
 import dateutil
 import shutil
@@ -116,7 +117,7 @@ class SessionIO(SessionBase):
 
         res = self.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED))
         for index, row in res.iterrows():
-            self.ended = dateutil.parser.parse(row['+INFO'])
+            self.ended = ciso8601.parse_datetime(row['+INFO'])
 
         res = self.data.query("TYPE in ['VAL', 'TRIAL'] or MSG=='SESSION-ENDED'")
         variables = []
@@ -148,12 +149,12 @@ class SessionIO(SessionBase):
 
                         elif msg.infoname == Session.INFO_CREATOR_NAME:
                             self.creator = msg.infovalue
+                        
+                        elif msg.infoname==Session.INFO_SESSION_STARTED:
+                            self.started = ciso8601.parse_datetime(msg.infovalue)
 
-                        elif msg.infoname == Session.INFO_SESSION_STARTED:
-                            self.started = dateutil.parser.parse(msg.infovalue)
-
-                        elif msg.infoname == Session.INFO_SESSION_ENDED:
-                            self.ended = dateutil.parser.parse(msg.infovalue)
+                        elif msg.infoname==Session.INFO_SESSION_ENDED:
+                            self.ended = ciso8601.parse_datetime(msg.infovalue)
 
                         elif msg.infoname == Session.INFO_SERIAL_PORT:
                             self.board_serial_port = msg.infovalue
