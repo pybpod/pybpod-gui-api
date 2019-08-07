@@ -8,7 +8,7 @@ The SWP Team
 ============
 
 .. image:: /_images/fc_logo.jpg
-	:scale: 50 %
+    :scale: 50%
 
 `Scientific Software Platform (Champalimaud Foundation) <http://research.fchampalimaud.org/en/research/platforms/staff/Scientific%20Software/>`_
 
@@ -24,7 +24,7 @@ All examples and Bpod's state machine and communication logic were based on the 
 
 License
 =======
-This is Open Source software. We use the `GNU General Public License version 3 <https://www.gnu.org/licenses/gpl.html>`_.
+This is Open Source software with an MIT license.
 
 Maintenance team
 ================
@@ -34,6 +34,7 @@ The current and past members of the **pybpodgui-api** team.
 * `@cajomferro <https://github.com/cajomferro/>`_ Carlos Mão de Ferro
 * `@JBauto <https://github.com/JBauto>`_ João Baúto
 * `@UmSenhorQualquer <https://github.com/UmSenhorQualquer/>`_ Ricardo Ribeiro
+* `@MicBoucinha <https://github.com/MicBoucinha>`_ Luís Teixeira
 
 
 .. Changes log
