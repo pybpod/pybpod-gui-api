@@ -12,7 +12,7 @@ Create a new project
 Create a new project programmatically. The resulting project can be opened with the `PyBpod GUI <http://pybpod.readthedocs.io>`_.
 
 .. code-block:: python
-   
+
     from pybpodgui_api.models.project import Project
 
     # create the project
@@ -56,7 +56,7 @@ Access to data from a session
 The next examples shows how to access the messages in a pybpod session.
 
 .. code-block:: python
-   
+
    from pybpodgui_api.models.project import Project
 
    # create the project
