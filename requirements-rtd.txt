@@ -1,8 +1,14 @@
-
-# swp dependencies
-pybpod-gui-api
+pandas
+pyqt5
+AnyQt
 
 # rtd dependencies
 sphinx>=1.5.5
 sphinx_rtd_theme>=0.2.4
 recommonmark
+
+# swp dependencies
+confapp
+safe-and-collaborative-architecture
+pybpod-api
+pybpod-gui-api
