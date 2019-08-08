@@ -20,7 +20,7 @@ requirements = [
 setup(
     name='pybpod-gui-api',
     version=version,
-    description="""ppybpod-gui-api is an API for the PyBpodGUI""",
+    description="""pybpod-gui-api is an API for the PyBpodGUI""",
     author=['Ricardo Ribeiro', 'Carlos Mão de Ferro'],
     author_email='ricardojvr@gmail.com',
     license='Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>',
