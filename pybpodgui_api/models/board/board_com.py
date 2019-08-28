@@ -93,6 +93,11 @@ class BoardCom(BoardIO):
         if hasattr(self, 'proc'):
             self.proc.stdin.write("close\r\n".encode())
             self.proc.stdin.flush()
+    
+    def kill_task(self):
+        if hasattr(self, 'proc'):
+            self.proc.stdin.write("kill\r\n".encode())
+            self.proc.stdin.flush()
 
     def log2board(self, data):
         """

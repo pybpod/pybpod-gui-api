@@ -57,6 +57,10 @@ class SetupCom(SetupBaseIO):
         if self.status == self.STATUS_RUNNING_TASK:
             self.board.stop_task()
 
+    def kill_task(self):
+        if self.status == self.STATUS_RUNNING_TASK:
+            self.board.kill_task()
+
     def pause_trial(self):
         if self.status == self.STATUS_RUNNING_TASK:
             self.board.pause_trial()
