@@ -25,15 +25,15 @@ class UserBase():
         """
         return self._name
 
+    @name.setter
+    def name(self, value):
+        self._name = value
+    
     @property
     def path(self):
         if self.project.path is None:
             return None
         return os.path.join(self.project.path, 'users', self.name)
-
-    @name.setter
-    def name(self, value):
-        self._name = value
 
     def __unicode__(self):
         return self.name

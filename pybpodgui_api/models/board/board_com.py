@@ -1,7 +1,6 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import dateutil
 import traceback
 import logging
 import os
@@ -15,6 +14,7 @@ from confapp import conf
 from pathlib import Path
 
 from pybpodapi.session import Session
+from pybpodapi.utils import date_parser
 from pybpodgui_api.models.board.board_io import BoardIO
 
 from sca.formats.csv import CSV_DELIMITER, CSV_QUOTECHAR, CSV_QUOTING
@@ -293,7 +293,7 @@ class BoardCom(BoardIO):
         if session.data is not None:
             res = session.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED))
             for index, row in res.iterrows():
-                session.ended = dateutil.parser.parse(row['+INFO'])
+                session.ended = date_parser.parse(row['+INFO'])
 
             board_task = self._running_boardtask
 

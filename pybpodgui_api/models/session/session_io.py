@@ -1,19 +1,19 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import logging
 import os
-import dateutil
 import shutil
 
-from pybpodgui_api.models.session.session_base import SessionBase
-from pybpodgui_api.com.messaging.parser import BpodMessageParser
-
-from pybpodapi.session import Session
-from pybpodapi.com.messaging.session_info import SessionInfo
-
-from sca.formats import csv
 import pandas as pd
-import logging
+
+from pybpodapi.com.messaging.session_info import SessionInfo
+from pybpodapi.session import Session
+from pybpodgui_api.com.messaging.parser import BpodMessageParser
+from pybpodgui_api.models.session.session_base import SessionBase
+from sca.formats import csv
+
+from pybpodapi.utils import date_parser
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class SessionIO(SessionBase):
 
         res = self.data.query("MSG=='{0}'".format(Session.INFO_SESSION_ENDED))
         for index, row in res.iterrows():
-            self.ended = dateutil.parser.parse(row['+INFO'])
+            self.ended = date_parser.parse(row['+INFO'])
 
         res = self.data.query("TYPE in ['VAL', 'TRIAL'] or MSG=='SESSION-ENDED'")
         variables = []
@@ -150,10 +150,10 @@ class SessionIO(SessionBase):
                             self.creator = msg.infovalue
 
                         elif msg.infoname == Session.INFO_SESSION_STARTED:
-                            self.started = dateutil.parser.parse(msg.infovalue)
+                            self.started = date_parser.parse(msg.infovalue)
 
                         elif msg.infoname == Session.INFO_SESSION_ENDED:
-                            self.ended = dateutil.parser.parse(msg.infovalue)
+                            self.ended = date_parser.parse(msg.infovalue)
 
                         elif msg.infoname == Session.INFO_SERIAL_PORT:
                             self.board_serial_port = msg.infovalue
