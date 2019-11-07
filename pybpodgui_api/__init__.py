@@ -9,10 +9,10 @@ import sys
 import os
 from confapp import conf
 
-__version__ = "1.2.2"
+__version__ = "1.8.0"
 __author__ = "Ricardo Jorge Vieira Ribeiro"
 __credits__ = ["Ricardo Ribeiro", "Carlos Mão de Ferro", 'Luís Teixeira']
-__license__ = "Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>"
+__license__ = "MIT"
 __maintainer__ = ["Ricardo Ribeiro", "Carlos Mão de Ferro", 'Luís Teixeira']
 __email__ = ["ricardojvr@gmail.com", "cajomferro@gmail.com", 'micboucinha@gmail.com']
 __status__ = "Development"
