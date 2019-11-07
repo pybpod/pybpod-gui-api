@@ -1,6 +1,6 @@
 name: pybpod-gui-plugin-env
 dependencies:
-  - python=3.5
+  - python=3.6
   - pyqt=5
   - numpy
   - pip:
@@ -10,5 +10,5 @@ dependencies:
       - https://github.com/snide/sphinx_rtd_theme/archive/master.zip
       - https://bitbucket.org/fchampalimaud/logging-bootstrap/get/master.zip
       - https://github.com/UmSenhorQualquer/pyforms/archive/master.zip
-      - https://bitbucket.org/fchampalimaud/pybpod-api/get/master.zip
+      - pybpod-api
       - https://bitbucket.org/fchampalimaud/pybranch/get/master.zip
