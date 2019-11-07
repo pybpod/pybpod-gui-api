@@ -3,14 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-**************************************
+******************************************
 Welcome to PyBpod GUI API's documentation!
-**************************************
+******************************************
 
 
 This **API** makes available a set of functions and properties to allow the manipulation of a `PyBpod GUI <http://pybpod.readthedocs.io>`_ project using code.
 
-Check the **how to > examples** section to learn how to use the API. 
+Check the :ref:`howto-label` section to learn how to use the API.
 
 
 .. toctree::

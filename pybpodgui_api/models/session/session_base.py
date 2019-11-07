@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 
 
-import os, csv, datetime, logging, dateutil, uuid
+import os
+import datetime
+import logging
 from confapp import conf
-from pathlib import Path
-from pybpodapi.session import Session
-from pybpodapi.com.messaging.session_info import SessionInfo
-from pybpodgui_api.com.messaging.parser import BpodMessageParser
 
 logger = logging.getLogger(__name__)
 
@@ -19,33 +17,32 @@ class SessionBase(object):
 
     def __init__(self, setup):
         setup += self
-        self.uuid4              = None # the session will only gain a uuid4 after the session is executed
+        self.uuid4 = None  # the session will only gain a uuid4 after the session is executed
 
-        self.data               = None
-        self.setup              = setup
-        self.name               = self.__default_name(setup)
-        self.creator            = ''
-        self.setup_name         = setup.name
-        self.board_name         = setup.board.name if setup.board else None
-        self.task_name          = setup.task.name  if setup.task  else None
-        self.board_serial_port  = setup.board.serial_port if setup.board else None
-        self.started            = datetime.datetime.now()
-        self.ended              = None
-        self.messages_history   = []
-        self.subjects           = []
-        self.filepath           = None
-        self.variables          = []
-        self.user               = None
-
+        self.data = None
+        self.setup = setup
+        self.name = self.__default_name(setup)
+        self.creator = ''
+        self.setup_name = setup.name
+        self.board_name = setup.board.name if setup.board else None
+        self.task_name = setup.task.name if setup.task else None
+        self.board_serial_port = setup.board.serial_port if setup.board else None
+        self.started = datetime.datetime.now()
+        self.ended = None
+        self.messages_history = []
+        self.subjects = []
+        self.filepath = None
+        self.variables = []
+        self.user = None
 
     def __default_name(self, setup):
         name = conf.PYBPODGUI_API_DEFAULT_SESSION_NAME
-        name = name.replace('[datetime]',   datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
-        name = name.replace('[project]',    setup.experiment.project.name)
+        name = name.replace('[datetime]', datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
+        name = name.replace('[project]', setup.experiment.project.name)
         name = name.replace('[experiment]', setup.experiment.name)
-        name = name.replace('[setup]',      setup.name)
-        name = name.replace('[protocol]',   setup.task.name if setup.task is not None else 'None')
-        name = name.replace('[subjects]',   '.'.join([s.name for s in setup.subjects]))
+        name = name.replace('[setup]', setup.name)
+        name = name.replace('[protocol]', setup.task.name if setup.task is not None else 'None')
+        name = name.replace('[subjects]', '.'.join([s.name for s in setup.subjects]))
         return name
 
     ##########################################################################
@@ -63,8 +60,6 @@ class SessionBase(object):
         """
         pass
 
-    
-    
     @property
     def setup(self):
         """
@@ -111,8 +106,9 @@ class SessionBase(object):
 
         :rtype: str
         """
-        if self.setup.path is None: return None
-        return os.path.join(self.setup.path, 'sessions',self.name)
+        if self.setup.path is None:
+            return None
+        return os.path.join(self.setup.path, 'sessions', self.name)
 
     @property
     def filepath(self):
@@ -129,7 +125,7 @@ class SessionBase(object):
     @variables.setter
     def variables(self, value):
         self._variables = value
-    
+
     @property
     def setup_name(self):
         """
@@ -239,7 +235,6 @@ class SessionBase(object):
         """
         return self.setup.task
 
-
     @property
     def is_running(self):
-        return self.status==self.STATUS_SESSION_RUNNING
+        return self.status == self.STATUS_SESSION_RUNNING

@@ -5,7 +5,8 @@
 A board represents the hardware that controls the running session for a specific setup.
 """
 
-import os, uuid
+import os
+import uuid
 import logging
 
 from pybpodgui_api.utils.generate_name import generate_name
@@ -15,28 +16,29 @@ logger = logging.getLogger(__name__)
 
 class BoardBase(object):
     """
-    Board base class with main attributes. A board should have a name, serial port, project belonging to, a path and a list of messages.
+    Board base class with main attributes. A board should have a name, serial port, project belonging to, a path and a
+    list of messages.
     """
 
     def __init__(self, project):
         """
         :ivar Project project: Project to which the Board belongs to.
         """
-        self.uuid4      = uuid.uuid4()
-        
-        self.name        = generate_name([x.name for x in project.boards], "box")
-        self.serial_port = None
-        self.project     = project
-        self.net_port    = 36000+len(project.boards)
+        self.uuid4 = uuid.uuid4()
 
-        self.data         = None
+        self.name = generate_name([x.name for x in project.boards], "box")
+        self.serial_port = None
+        self.project = project
+        self.net_port = 36000 + len(project.boards)
+
+        self.data = None
         self.log_messages = []
 
         self.project += self
 
-        self.enabled_bncports       = None
-        self.enabled_wiredports     = None
-        self.enabled_behaviorports  = None
+        self.enabled_bncports = None
+        self.enabled_wiredports = None
+        self.enabled_behaviorports = None
 
     def __add__(self, value):
         self.log_messages.append(value)
@@ -45,7 +47,6 @@ class BoardBase(object):
     ##########################################################################
     ####### PROPERTIES #######################################################
     ##########################################################################
-
     @property
     def name(self):
         """
@@ -85,7 +86,6 @@ class BoardBase(object):
     def project(self, value):
         self._project = value
 
-
     @property
     def path(self):
         """
@@ -93,10 +93,9 @@ class BoardBase(object):
 
         :rtype: str
         """
-        if self.project.path is None: return None
-        return os.path.join(self.project.path, 'boards',self.name)
-
-        
+        if self.project.path is None:
+            return None
+        return os.path.join(self.project.path, 'boards', self.name)
 
     @property
     def enabled_bncports(self):
@@ -108,7 +107,8 @@ class BoardBase(object):
         return self._enabled_bncports
 
     @enabled_bncports.setter
-    def enabled_bncports(self, value):      self._enabled_bncports = value
+    def enabled_bncports(self, value):
+        self._enabled_bncports = value
 
     @property
     def enabled_wiredports(self):
@@ -120,7 +120,8 @@ class BoardBase(object):
         return self._enabled_wiredports
 
     @enabled_wiredports.setter
-    def enabled_wiredports(self, value): self._enabled_wiredports = value
+    def enabled_wiredports(self, value):
+        self._enabled_wiredports = value
 
     @property
     def enabled_behaviorports(self):
@@ -132,7 +133,8 @@ class BoardBase(object):
         return self._enabled_behaviorports
 
     @enabled_behaviorports.setter
-    def enabled_behaviorports(self, value): self._enabled_behaviorports = value
+    def enabled_behaviorports(self, value):
+        self._enabled_behaviorports = value
 
     @property
     def net_port(self):
@@ -144,8 +146,8 @@ class BoardBase(object):
         return self._net_port
 
     @net_port.setter
-    def net_port(self, value): self._net_port = value
-
+    def net_port(self, value):
+        self._net_port = value
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -159,5 +161,3 @@ class BoardBase(object):
 
     def __str__(self):
         return self.__unicode__()
-
-

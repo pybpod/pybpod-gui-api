@@ -4,12 +4,15 @@
 """ pycontrol.api.models.project
 
 """
-import logging, uuid, os, shutil
+import logging
+import uuid
+import os
+import shutil
 from pybpodgui_api.models.experiment import Experiment
-from pybpodgui_api.models.board      import Board
-from pybpodgui_api.models.task       import Task
-from pybpodgui_api.models.subject    import Subject
-from pybpodgui_api.models.user       import User
+from pybpodgui_api.models.board import Board
+from pybpodgui_api.models.task import Task
+from pybpodgui_api.models.subject import Subject
+from pybpodgui_api.models.user import User
 from pybpodgui_api.utils.copy_directory import copy_directory
 
 logger = logging.getLogger(__name__)
@@ -21,15 +24,14 @@ class ProjectBase(object):
     """
 
     def __init__(self):
-        self.uuid4      = uuid.uuid4()
-        self.name           = ''
-        self._experiments   = []
-        self._tasks         = []
-        self._boards        = []
-        self._subjects      = []
-        self._users         = []
-        self._path          = None
-        
+        self.uuid4 = uuid.uuid4()
+        self.name = ''
+        self._experiments = []
+        self._tasks = []
+        self._boards = []
+        self._subjects = []
+        self._users = []
+        self._path = None
 
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -88,8 +90,7 @@ class ProjectBase(object):
         :rtype: list(User)
         """
         return self._users
-   
-   
+
     @path.setter
     def path(self, value):
         self._path = value
@@ -112,11 +113,11 @@ class ProjectBase(object):
     ##########################################################################
 
     def import_task(self, filepath, importdir=False):
-        if self.path==None:
+        if self.path is None:
             raise Exception('The project has to be saved first')
 
         filename, file_extension = os.path.splitext(os.path.basename(filepath))
-        
+
         # check if there are any existing task with the same name
         if self.find_task(filename) is not None:
             raise Exception(
@@ -125,10 +126,10 @@ class ProjectBase(object):
         ###########################################################
 
         # create the task, folder, and copy the files
-        task      = self.create_task()
+        task = self.create_task()
         task.name = filename
         task.make_path()
-        new_filepath  = os.path.join(task.path, task.name+'.py')
+        new_filepath = os.path.join(task.path, task.name+'.py')
         task.filepath = new_filepath
 
         if importdir:
@@ -139,20 +140,40 @@ class ProjectBase(object):
 
         return task
 
-    def __add__(self, obj):     
-        if isinstance(obj, Experiment): self._experiments.append(obj)
-        if isinstance(obj, Board):      self._boards.append(obj)
-        if isinstance(obj, Task):       self._tasks.append(obj)
-        if isinstance(obj, Subject):    self._subjects.append(obj)
-        if isinstance(obj, User):       self._users.append(obj)
+    def __add__(self, obj):
+        if isinstance(obj, Experiment):
+            self._experiments.append(obj)
+
+        if isinstance(obj, Board):
+            self._boards.append(obj)
+
+        if isinstance(obj, Task):
+            self._tasks.append(obj)
+
+        if isinstance(obj, Subject):
+            self._subjects.append(obj)
+
+        if isinstance(obj, User):
+            self._users.append(obj)
+
         return self
 
     def __sub__(self, obj):
-        if isinstance(obj, Experiment): self._experiments.remove(obj)
-        if isinstance(obj, Board):      self._boards.remove(obj)
-        if isinstance(obj, Task):       self._tasks.remove(obj)
-        if isinstance(obj, Subject):    self._subjects.remove(obj)
-        if isinstance(obj, User):       self._users.remove(obj)
+        if isinstance(obj, Experiment):
+            self._experiments.remove(obj)
+
+        if isinstance(obj, Board):
+            self._boards.remove(obj)
+
+        if isinstance(obj, Task):
+            self._tasks.remove(obj)
+
+        if isinstance(obj, Subject):
+            self._subjects.remove(obj)
+
+        if isinstance(obj, User):
+            self._users.remove(obj)
+
         return self
 
     def find_board(self, name):
@@ -163,7 +184,8 @@ class ProjectBase(object):
         :rtype: Board
         """
         for board in self.boards:
-            if board.name == name: return board
+            if board.name == name:
+                return board
         return None
 
     def find_task(self, name):
@@ -174,7 +196,8 @@ class ProjectBase(object):
         :rtype: Task
         """
         for task in self.tasks:
-            if task.name == name: return task
+            if task.name == name:
+                return task
         return None
 
     def find_subject(self, name):
@@ -185,7 +208,8 @@ class ProjectBase(object):
         :rtype: Subject
         """
         for subject in self.subjects:
-            if subject.name == name: return subject
+            if subject.name == name:
+                return subject
         return None
 
     def find_setup_by_id(self, uuid4):
@@ -209,7 +233,8 @@ class ProjectBase(object):
         :rtype: Subject
         """
         for subject in self.subjects:
-            if subject.uuid4 == uuid4: return subject
+            if subject.uuid4 == uuid4:
+                return subject
         return None
 
     def find_session(self, uuid4):
@@ -220,7 +245,7 @@ class ProjectBase(object):
                         return session
         return None
 
-    def find_user(self,username):
+    def find_user(self, username):
         for user in self.users:
             if user.name == username:
                 return user
@@ -229,7 +254,7 @@ class ProjectBase(object):
     def create_experiment(self):
         """
         Add an experiment to the project, and return it.
-        
+
         :rtype: Experiment
         """
         return Experiment(self)
@@ -237,7 +262,7 @@ class ProjectBase(object):
     def create_board(self):
         """
         Add an board to the project, and return it.
-        
+
         :rtype: Board
         """
         return Board(self)
@@ -245,7 +270,7 @@ class ProjectBase(object):
     def create_task(self):
         """
         Add an task to the project, and return it.
-        
+
         :rtype: Task
         """
         return Task(self)
@@ -253,7 +278,7 @@ class ProjectBase(object):
     def create_subject(self):
         """
         Add an subject to the project, and return it.
-        
+
         :rtype: Subject
         """
         return Subject(self)
@@ -261,7 +286,7 @@ class ProjectBase(object):
     def create_user(self):
         """
         Add a user bject to the project, and return it.
-        
+
         :rtype: User
         """
         return User(self)

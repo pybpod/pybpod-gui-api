@@ -1,11 +1,11 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 from pybpodgui_api.models.session.session_io import SessionIO
-from time import sleep
+
 
 class SessionCom(SessionIO):
     """
-    
+
     **Properties**
 
         status
@@ -18,14 +18,12 @@ class SessionCom(SessionIO):
     """
 
     #### SESSION STATUS CONSTANTS ####
-    STATUS_READY           = 0
-    STATUS_SESSION_RUNNING = 1 # The session is running
-
+    STATUS_READY = 0
+    STATUS_SESSION_RUNNING = 1  # The session is running
 
     def __init__(self, setup):
         super(SessionCom, self).__init__(setup)
         self.status = self.STATUS_READY
-        
 
     @property
     def status(self):
@@ -40,7 +38,7 @@ class SessionCom(SessionIO):
     def status(self, value):
         self._status = value
 
-        if value==self.STATUS_READY:
+        if value == self.STATUS_READY:
             self.setup.status = self.setup.STATUS_READY
-        elif value==self.STATUS_SESSION_RUNNING:
+        elif value == self.STATUS_SESSION_RUNNING:
             self.setup.status = self.setup.STATUS_RUNNING_TASK

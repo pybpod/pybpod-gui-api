@@ -1,5 +1,6 @@
 import os
-import logging, pybpodgui_api
+import logging
+import pybpodgui_api
 from pybpodgui_api.models.user.user_base import UserBase
 
 from sca.formats import json
@@ -12,40 +13,41 @@ class UserIO(UserBase):
     def __init__(self, _project):
         super(UserIO, self).__init__(_project)
 
-        self.data = None # DOn't know if we actualy need this
+        self.data = None  # DOn't know if we actualy need this
 
     def save(self):
         if not self.name:
             logger.warning('Skipping user without a name')
             return None
         else:
-            if not os.path.exists(self.path): os.makedirs(self.path)
-            
+            if not os.path.exists(self.path):
+                os.makedirs(self.path)
+
             if self.data:
                 data = self.data
             else:
                 data = json.scadict(
-                    uuid4_id= self.uuid4,
+                    uuid4_id=self.uuid4,
                     software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-                    def_url ='http://pybpod.readthedocs.org',
+                    def_url='http://pybpod.readthedocs.org',
                     def_text='This file contains information about a user used on PyBpod GUI.'
                 )
 
             config_path = os.path.join(self.path, self.name + '.json')
-            with open(config_path, 'w') as fstream: json.dump(data, fstream)
+            with open(config_path, 'w') as fstream:
+                json.dump(data, fstream)
 
     def toJSON(self):
         data = json.scadict(
-                    uuid4_id= self.uuid4,
+                    uuid4_id=self.uuid4,
                     software='PyBpod GUI API v'+str(pybpodgui_api.__version__),
-                    def_url ='http://pybpod.readthedocs.org',
+                    def_url='http://pybpod.readthedocs.org',
                     def_text='This file contains information about a user used on PyBpod GUI.'
                 )
-        
+
         return json.dumps(data)
 
     def load(self, path):
-        
         self.name = os.path.basename(path)
 
         try:

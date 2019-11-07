@@ -1,7 +1,9 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, uuid
+import logging
+import os
+import uuid
 from pybpodgui_api.models.setup.board_task import BoardTask
 from pybpodgui_api.models.session import Session
 from pybpodgui_api.models.subject import Subject
@@ -12,26 +14,23 @@ logger = logging.getLogger(__name__)
 
 class SetupBase(object):
 
-    
     def __init__(self, experiment):
         """
         :ivar Experiment experiment: Experiment to which the Setup belongs to
         """
-        self.uuid4    = uuid.uuid4()
-        self.name     = generate_name([x.name for x in experiment.setups], "setup")
+        self.uuid4 = uuid.uuid4()
+        self.name = generate_name([x.name for x in experiment.setups], "setup")
         self.detached = False
-        
+
         self.experiment = experiment
         self.board_task = self.create_board_task()
 
         self._sessions = []
         self._subjects = []
-        self.board  = None
-        self.task   = None
+        self.board = None
+        self.task = None
 
         self.experiment += self
-
-
 
     ##########################################################################
     ####### PROPERTIES #######################################################
@@ -59,9 +58,6 @@ class SetupBase(object):
         """
         return self._subjects
 
-    
-    
-
     @property
     def board(self):
         """
@@ -73,8 +69,11 @@ class SetupBase(object):
 
     @board.setter
     def board(self, value):
-        if isinstance(value, str): value = self.project.find_board(value)
-        if self.board_task: self.board_task.board = value
+        if isinstance(value, str):
+            value = self.project.find_board(value)
+
+        if self.board_task:
+            self.board_task.board = value
 
     @property
     def task(self):
@@ -87,8 +86,11 @@ class SetupBase(object):
 
     @task.setter
     def task(self, value):
-        if isinstance(value, str): value = self.project.find_task(value)
-        if self.board_task: self.board_task.task = value
+        if isinstance(value, str):
+            value = self.project.find_task(value)
+
+        if self.board_task:
+            self.board_task.task = value
 
     @property
     def experiment(self):
@@ -115,6 +117,7 @@ class SetupBase(object):
     @property
     def detached(self):
         return self._detached
+
     @detached.setter
     def detached(self, value):
         self._detached = value
@@ -135,7 +138,8 @@ class SetupBase(object):
 
         :rtype: str
         """
-        if self.experiment.path is None: return None
+        if self.experiment.path is None:
+            return None
         return os.path.join(self.experiment.path, 'setups', self.name)
 
     @property
@@ -148,7 +152,7 @@ class SetupBase(object):
         try:
             order_sessions = sorted(self.sessions, key=lambda session: session.started)  # sort by end_date
             return order_sessions[-1]
-        except IndexError as err:
+        except IndexError:
             return None
 
     @property
@@ -204,8 +208,12 @@ class SetupBase(object):
         return self.__unicode__()
 
     def __add__(self, obj):
-        if isinstance(obj, Session) and obj not in self._sessions: self._sessions.append(obj)
-        if isinstance(obj, Subject) and obj not in self._subjects: self._subjects.append(obj)
+        if isinstance(obj, Session) and obj not in self._sessions:
+            self._sessions.append(obj)
+        if isinstance(obj, Subject) and obj not in self._subjects:
+            self._subjects.append(obj)
+        if isinstance(obj, list):
+            self._subjects.extend([x for x in obj if isinstance(x, Subject)])
         return self
 
     def __sub__(self, obj):

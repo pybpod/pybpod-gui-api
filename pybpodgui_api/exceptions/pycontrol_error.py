@@ -5,5 +5,5 @@ from pybpodgui_api.exceptions.api_error import APIError
 
 
 class PycontrolError(APIError):
-	""" Exception raised when a board operation fails"""
-	pass
+    """ Exception raised when a board operation fails"""
+    pass

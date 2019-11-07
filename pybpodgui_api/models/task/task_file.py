@@ -1,7 +1,8 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, re
+import logging
+import re
 from pybpodgui_api.models.task.task_io import TaskIO
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ class TaskFile(TaskIO):
     """ Represents a state machine """
 
     def find_task_variables_from_file(self):
-        
+
         task_variables = []
 
         # match any line begining with v. and get variable name and value until end of line or # sign
@@ -46,9 +47,9 @@ class TaskFile(TaskIO):
 
         for idx, read_state in enumerate(found_matches.split(','), start=start):
             try:
-                state_id = str(read_state.replace("'", "")) # if it is string
+                state_id = str(read_state.replace("'", ""))  # if it is string
             except:
-                state_id = str(read_state.replace("'", "")) # if it is a var
+                state_id = str(read_state.replace("'", ""))  # if it is a var
 
             matches[idx] = state_id.strip()
 

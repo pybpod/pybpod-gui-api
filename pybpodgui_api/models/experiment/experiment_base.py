@@ -1,7 +1,9 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, uuid, os
+import logging
+import uuid
+import os
 from pybpodgui_api.models.setup import Setup
 from pybpodgui_api.utils.generate_name import generate_name
 
@@ -18,12 +20,12 @@ class ExperimentBase(object):
         """
         :ivar Project project: project object reference
         """
-        self.uuid4   = uuid.uuid4()
-        
-        self.name    = generate_name([x.name for x in project.experiments], "experiment")
+        self.uuid4 = uuid.uuid4()
+
+        self.name = generate_name([x.name for x in project.experiments], "experiment")
         self._setups = []
         self.project = project
-       
+
         self.project += self
 
     ##########################################################################
@@ -54,8 +56,11 @@ class ExperimentBase(object):
 
     @task.setter
     def task(self, value):
-        if isinstance(value, str): value = self.project.find_task(value)
+        if isinstance(value, str):
+            value = self.project.find_task(value)
+
         self._task = value
+
         for setup in self.setups:
             setup.task = value
 
@@ -88,9 +93,10 @@ class ExperimentBase(object):
 
         :rtype: str
         """
-        if self.project.path is None: return None
-        return os.path.join(self.project.path, 'experiments',self.name)
+        if self.project.path is None:
+            return None
 
+        return os.path.join(self.project.path, 'experiments', self.name)
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -99,24 +105,26 @@ class ExperimentBase(object):
     def remove(self):
         """
         Remove experiment
-         
+
         """
         pass
 
     def create_setup(self):
         """
         Create new instance of setup
-        
+
         :rtype: Setup
         """
         return Setup(self)
 
     def __add__(self, obj):
-        if isinstance(obj, Setup): self._setups.append(obj)
+        if isinstance(obj, Setup):
+            self._setups.append(obj)
         return self
 
     def __sub__(self, obj):
-        if isinstance(obj, Setup): self._setups.remove(obj)
+        if isinstance(obj, Setup):
+            self._setups.remove(obj)
         return self
 
     def __unicode__(self):

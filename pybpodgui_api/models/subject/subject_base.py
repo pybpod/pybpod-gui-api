@@ -1,7 +1,9 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging, os, uuid
+import logging
+import os
+import uuid
 from pybpodgui_api.models.session import Session
 from pybpodgui_api.utils.generate_name import generate_name
 
@@ -11,15 +13,15 @@ logger = logging.getLogger(__name__)
 class SubjectBase(object):
 
     def __init__(self, project):
-        self._path      = None
-        self.uuid4      = uuid.uuid4()
+        self._path = None
+        self.uuid4 = uuid.uuid4()
 
-        self.name       = generate_name([x.name for x in project.subjects], "subject")
+        self.name = generate_name([x.name for x in project.subjects], "subject")
 
-        self.project    = project
-        self.setup      = None
+        self.project = project
+        self.setup = None
 
-        self.project    += self
+        self.project += self
 
         self._sessions = []
 
@@ -27,19 +29,17 @@ class SubjectBase(object):
     ####### PROPERTIES #######################################################
     ##########################################################################
 
-
     def __add__(self, value):
-        #pass
-        if isinstance(value, Session): self._sessions.append(value)
+        if isinstance(value, Session):
+            self._sessions.append(value)
         return self
 
-    def __sub__(self,obj):
-        if isinstance(obj,Session) and obj in self._sessions:
+    def __sub__(self, obj):
+        if isinstance(obj, Session) and obj in self._sessions:
             self._sessions.remove(obj)
 
     def remove(self):
         print('subject base removing session')
-
 
     def get_sessions(self):
         """
@@ -53,7 +53,7 @@ class SubjectBase(object):
                 for session in setup.sessions:
                     if self in session.subjects:
                         yield session
-        
+
         return None
 
     @property
@@ -66,7 +66,8 @@ class SubjectBase(object):
         return self._name
 
     @name.setter
-    def name(self, value):      self._name = value
+    def name(self, value):
+        self._name = value
 
     @property
     def project(self):
@@ -78,7 +79,8 @@ class SubjectBase(object):
         return self._project
 
     @project.setter
-    def project(self, value):   self._project = value
+    def project(self, value):
+        self._project = value
 
     @property
     def setup(self):
@@ -100,9 +102,9 @@ class SubjectBase(object):
 
         :rtype: str
         """
-        if self.project.path is None: return None
+        if self.project.path is None:
+            return None
         return os.path.join(self.project.path, 'subjects', self.name)
-
 
     ##########################################################################
     ####### FUNCTIONS ########################################################
@@ -114,7 +116,8 @@ class SubjectBase(object):
         """
         pass
 
-    def __unicode__(self):  return self.name
-    def __str__(self):      return self.__unicode__()
+    def __unicode__(self):
+        return self.name
 
-
+    def __str__(self):
+        return self.__unicode__()
