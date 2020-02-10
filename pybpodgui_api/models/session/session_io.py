@@ -127,7 +127,7 @@ class SessionIO(SessionBase):
                 variables.append(['Session ended', None])
             else:
                 variables.append([row['MSG'], row['+INFO']])
-        self.variables = variables
+        #self.variables = variables
 
     def load_info(self):
         if not self.filepath:
