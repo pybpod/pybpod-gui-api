@@ -34,19 +34,6 @@ class TaskVariable(object):
         self._name = value
 
     @property
-    def value(self):
-        """
-        Get and set variable value
-
-        :rtype: str
-        """
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        self._value = value
-
-    @property
     def datatype(self):
         """
         Get and set variable data type. It can be from type 'number' or 'string'
@@ -83,8 +70,7 @@ class TaskVariable(object):
         """
         Load variable data from filesystem
 
-        :ivar str setup_path: Path of the setup
-        :ivar dict data: data object that contains all setup info
+        :ivar dict data: data object that contains all task variable info
         """
         self.name = data['name']
         self.value = data['value']
