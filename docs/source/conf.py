@@ -65,8 +65,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pybpod-gui-api'
-copyright = '2017-2019, Scientific Sofware Platform (CF)'
-author = 'Scientific Sofware Platform (CF)'
+copyright = '2017-2020, Scientific Sofware Platform, Champalimaud Foundation'
+author = 'Scientific Sofware Platform, Champalimaud Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
