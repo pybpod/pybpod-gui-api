@@ -13,7 +13,7 @@ class UserIO(UserBase):
     def __init__(self, _project):
         super(UserIO, self).__init__(_project)
 
-        self.data = None  # DOn't know if we actualy need this
+        self.data = None  # Don't know if we actually need this
 
     def save(self):
         if not self.name:
@@ -49,13 +49,16 @@ class UserIO(UserBase):
 
     def load(self, path):
         self.name = os.path.basename(path)
+        config_file = os.path.join(self.path, self.name + '.json')
+        if not os.path.exists(config_file) or os.path.getsize(config_file) == 0:
+            return
 
         try:
-            with open(os.path.join(self.path, self.name + '.json'), 'r') as stream:
+            with open(config_file, 'r') as stream:
                 self.data = data = json.load(stream)
             self.uuid4 = data.uuid4 if data.uuid4 else self.uuid4
         except:
-            raise Exception('There was an error loading the configuration file for the subject [{0}]')
+            raise Exception(f'There was an error loading the configuration file for the user [{self.name}]')
 
     def collect_data(self, data):
         data.update({'name': self.name})
