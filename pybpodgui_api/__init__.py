@@ -9,7 +9,7 @@ import sys
 import os
 from confapp import conf
 
-__version__ = "1.8.3"
+__version__ = "1.8.3b1"
 __author__ = "Ricardo Jorge Vieira Ribeiro"
 __credits__ = ["Ricardo Ribeiro", "Carlos Mão de Ferro", 'Luís Teixeira']
 __license__ = "MIT"
