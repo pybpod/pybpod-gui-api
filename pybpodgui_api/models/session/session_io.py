@@ -109,7 +109,6 @@ class SessionIO(SessionBase):
                                     delimiter=csv.CSV_DELIMITER,
                                     quotechar=csv.CSV_QUOTECHAR,
                                     quoting=csv.CSV_QUOTING,
-                                    lineterminator=csv.CSV_LINETERMINATOR,
                                     skiprows=nrows,
                                     memory_map=True
                                     )
